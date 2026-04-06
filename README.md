@@ -1,0 +1,40 @@
+# Esports Community Mod + FAQ Copilot
+
+Discord-first, locally hosted proof of concept for a Call of Duty community moderation and FAQ assistant.
+
+## Project Summary
+This project demonstrates how an LLM application can improve moderation and support workflows for a large esports Discord server. The app combines a Discord bot with a one-page moderator dashboard. It answers repetitive fan questions, summarizes announcements, drafts moderator responses, and detects rule-breaking or toxic content.
+
+## Core Workflows
+1. FAQ Copilot
+2. Announcement Summarizer
+3. Moderator Response Drafting
+4. Toxicity / Rule Violation Detection
+
+## Demo Modes
+- **Demo Mode ON**: the system may auto-delete violating content in the sandbox server.
+- **Demo Mode OFF**: the system recommends an action and requires moderator approval.
+
+## Primary Stack
+- React + Vite frontend
+- FastAPI backend
+- discord.py bot
+- SQLite for structured storage
+- Chroma for retrieval
+- OpenAI primary provider
+- Anthropic fallback provider
+- Docker Compose for local deployment
+
+## Repository Docs
+- [`docs/KANBAN_BOARD.md`](docs/KANBAN_BOARD.md) - Kanban-style tracking board and delivery plan
+- [`docs/MODULE_BUILD_GUIDE.md`](docs/MODULE_BUILD_GUIDE.md) - detailed module-by-module implementation guide for the team and coding agents
+
+## Seeded Community Theme
+Call of Duty competitive Discord server with rules, FAQs, announcements, mod notes, and seeded moderation test cases.
+
+## High-Level Success Criteria
+- Discord bot responds to slash commands for FAQ, summaries, and mod drafting
+- Passive monitoring analyzes new messages in a sandbox moderation channel
+- Violations are explained with a matched rule and suggested action
+- Citations appear in grounded answers
+- Dashboard shows knowledge sources, review queue, and moderation history
