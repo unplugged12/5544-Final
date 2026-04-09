@@ -355,6 +355,15 @@ Make the project feel like a real moderation tool instead of a stateless chatbot
 9. Add passive monitoring and demo-mode delete action.
 10. Add audit history and polish.
 
+## Agent Build Prompts
+
+For coding agents (Claude, Codex, etc.), see [`AGENT_BUILD_PROMPTS.md`](AGENT_BUILD_PROMPTS.md) which contains 4 detailed, self-contained prompts — one per component — designed for one-shot builds. Execution order:
+
+```
+1. Data Seed Pack  →  2. Backend API  →  3a. Frontend Dashboard (parallel)
+                                         3b. Discord Bot (parallel)
+```
+
 ## Suggested Folder Shape
 - frontend
 - backend

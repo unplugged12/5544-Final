@@ -28,6 +28,7 @@ This project demonstrates how an LLM application can improve moderation and supp
 ## Repository Docs
 - [`docs/KANBAN_BOARD.md`](docs/KANBAN_BOARD.md) - Kanban-style tracking board and delivery plan
 - [`docs/MODULE_BUILD_GUIDE.md`](docs/MODULE_BUILD_GUIDE.md) - detailed module-by-module implementation guide for the team and coding agents
+- [`docs/AGENT_BUILD_PROMPTS.md`](docs/AGENT_BUILD_PROMPTS.md) - self-contained, one-shot build prompts for coding agents (4 prompts covering Data Seed, Backend, Frontend, Discord Bot)
 
 ## Seeded Community Theme
 Call of Duty competitive Discord server with rules, FAQs, announcements, mod notes, and seeded moderation test cases.
