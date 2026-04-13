@@ -1,0 +1,184 @@
+{
+  "rules": [
+    {
+      "source_id": "rule_001",
+      "rule_number": 1,
+      "title": "No Harassment or Bullying",
+      "description": "Do not target, harass, threaten, or bully any member. This includes persistent unwanted messages, dogpiling, and intimidation. Competitive trash talk must stay about gameplay, never about a person's identity or personal life. Repeated violations will result in an immediate ban.",
+      "category": "conduct",
+      "severity_default": "high",
+      "tags": ["harassment", "bullying", "conduct"],
+      "citation_label": "Rule 1: No Harassment or Bullying"
+    },
+    {
+      "source_id": "rule_002",
+      "rule_number": 2,
+      "title": "No Hate Speech or Slurs",
+      "description": "CDL Ranked Discord has zero tolerance for hate speech, slurs, or bigotry of any kind. This applies to text chat, voice chat, nicknames, profile images, and status messages. Any use of racial, ethnic, homophobic, or other discriminatory language will result in an immediate permanent ban with no appeal.",
+      "category": "conduct",
+      "severity_default": "critical",
+      "tags": ["hate-speech", "slurs", "discrimination", "zero-tolerance"],
+      "citation_label": "Rule 2: No Hate Speech or Slurs"
+    },
+    {
+      "source_id": "rule_003",
+      "rule_number": 3,
+      "title": "No Spam or Flooding",
+      "description": "Do not send repeated messages, copypasta, excessive emoji spam, or rapid-fire posts that disrupt conversation flow. Bot command spam in channels other than #bot-commands is also prohibited. This includes posting the same message across multiple channels simultaneously.",
+      "category": "content",
+      "severity_default": "low",
+      "tags": ["spam", "flooding", "copypasta"],
+      "citation_label": "Rule 3: No Spam or Flooding"
+    },
+    {
+      "source_id": "rule_004",
+      "rule_number": 4,
+      "title": "No Unauthorized Self-Promotion",
+      "description": "Posting Twitch, YouTube, Twitter, or other social media links is only allowed in #content-share. Do not DM members with promotional content or link your channels in #general, #competitive, or other discussion channels. Repeat offenders will lose posting privileges in #content-share entirely.",
+      "category": "content",
+      "severity_default": "low",
+      "tags": ["self-promotion", "advertising", "content-share"],
+      "citation_label": "Rule 4: No Unauthorized Self-Promotion"
+    },
+    {
+      "source_id": "rule_005",
+      "rule_number": 5,
+      "title": "No Spoilers for Unreleased Content",
+      "description": "Leaked gameplay footage, datamined weapon stats, unreleased map layouts, or any other unreleased Call of Duty: Black Ops 7 content must be posted exclusively in #leaks-spoilers with proper spoiler tags. Posting untagged spoilers in any other channel will result in message deletion and a warning. Repeated violations will lead to a timeout.",
+      "category": "content",
+      "severity_default": "medium",
+      "tags": ["spoilers", "leaks", "datamine", "unreleased"],
+      "citation_label": "Rule 5: No Spoilers for Unreleased Content"
+    },
+    {
+      "source_id": "rule_006",
+      "rule_number": 6,
+      "title": "Stay On Topic",
+      "description": "Use each channel for its designated purpose. Tournament discussion belongs in #tournament-info, LFG posts belong in #ranked-lfg, memes belong in #memes, and so on. Off-topic messages will be deleted, and persistent off-topic posting will result in a warning.",
+      "category": "server",
+      "severity_default": "low",
+      "tags": ["off-topic", "channel-use", "organization"],
+      "citation_label": "Rule 6: Stay On Topic"
+    },
+    {
+      "source_id": "rule_007",
+      "rule_number": 7,
+      "title": "No Impersonation",
+      "description": "Do not impersonate server staff, CDL pro players, content creators, or other community members. This includes using similar nicknames, copying profile pictures, or claiming to represent the server in any official capacity. Impersonation of staff members is treated as a critical offense and may result in an immediate ban.",
+      "category": "conduct",
+      "severity_default": "high",
+      "tags": ["impersonation", "identity", "fraud"],
+      "citation_label": "Rule 7: No Impersonation"
+    },
+    {
+      "source_id": "rule_008",
+      "rule_number": 8,
+      "title": "No Account Trading or Selling",
+      "description": "Buying, selling, or trading Call of Duty accounts is strictly prohibited. This includes offering boosting services, selling unlock-all tools, or advertising any paid service that modifies another player's account. Posts advertising these services will be deleted immediately, and the user will receive a ban.",
+      "category": "content",
+      "severity_default": "high",
+      "tags": ["account-trading", "selling", "boosting", "unlock"],
+      "citation_label": "Rule 8: No Account Trading or Selling"
+    },
+    {
+      "source_id": "rule_009",
+      "rule_number": 9,
+      "title": "No Cheating Discussion or Promotion",
+      "description": "Sharing, promoting, linking, or discussing cheats, hacks, aimbots, wallhacks, exploits, or any other software that provides an unfair competitive advantage is strictly forbidden. This includes naming specific cheat providers or asking where to obtain cheats. Violations result in an immediate permanent ban.",
+      "category": "competitive",
+      "severity_default": "critical",
+      "tags": ["cheating", "hacks", "exploits", "aimbots", "zero-tolerance"],
+      "citation_label": "Rule 9: No Cheating Discussion or Promotion"
+    },
+    {
+      "source_id": "rule_010",
+      "rule_number": 10,
+      "title": "Respect Staff Decisions",
+      "description": "Do not argue with or publicly challenge moderator decisions in chat. If you disagree with a moderation action, submit a formal appeal in #appeals with a clear explanation of your case. Publicly questioning or attacking staff members over moderation decisions will result in an additional warning or timeout.",
+      "category": "conduct",
+      "severity_default": "medium",
+      "tags": ["staff", "moderation", "appeals", "respect"],
+      "citation_label": "Rule 10: Respect Staff Decisions"
+    },
+    {
+      "source_id": "rule_011",
+      "rule_number": 11,
+      "title": "No NSFW Content",
+      "description": "Pornography, gore, sexually explicit material, or any other NSFW content is strictly prohibited in all channels, including voice chat screen shares and profile pictures. This is a competitive gaming community with members of all ages. Violations will result in an immediate timeout and potential ban.",
+      "category": "content",
+      "severity_default": "high",
+      "tags": ["nsfw", "explicit", "pornography", "gore"],
+      "citation_label": "Rule 11: No NSFW Content"
+    },
+    {
+      "source_id": "rule_012",
+      "rule_number": 12,
+      "title": "Voice Chat Conduct",
+      "description": "All text chat rules apply equally in voice channels. Do not mic spam, play music through your microphone, use excessive soundboards, or scream into your mic. Keep background noise to a minimum, and use push-to-talk if your environment is noisy. Disrupting voice channels will result in a voice chat mute or server timeout.",
+      "category": "voice",
+      "severity_default": "medium",
+      "tags": ["voice-chat", "mic-spam", "soundboard", "push-to-talk"],
+      "citation_label": "Rule 12: Voice Chat Conduct"
+    },
+    {
+      "source_id": "rule_013",
+      "rule_number": 13,
+      "title": "Tournament Conduct",
+      "description": "All participants in CDL Ranked Discord tournaments must compete fairly and in good sportsmanship. Match-fixing, intentional disconnects, stat manipulation, collusion, and unsportsmanlike behavior are prohibited. Players who forfeit without notice or rage-quit mid-match will receive a tournament ban. All disputes must be submitted through #dispute-resolution.",
+      "category": "competitive",
+      "severity_default": "high",
+      "tags": ["tournament", "match-fixing", "sportsmanship", "competitive-integrity"],
+      "citation_label": "Rule 13: Tournament Conduct"
+    },
+    {
+      "source_id": "rule_014",
+      "rule_number": 14,
+      "title": "Clan Recruitment Rules",
+      "description": "Clan and team recruitment posts are only permitted in #clan-recruitment. Each clan or team may post a maximum of one recruitment message per 48 hours. Posts must include basic information such as team name, skill level, and time zone. Cross-posting recruitment messages to other channels will result in deletion and a warning.",
+      "category": "server",
+      "severity_default": "low",
+      "tags": ["clan", "recruitment", "team", "lfg"],
+      "citation_label": "Rule 14: Clan Recruitment Rules"
+    },
+    {
+      "source_id": "rule_015",
+      "rule_number": 15,
+      "title": "English in Main Channels",
+      "description": "Main discussion channels are English-only to ensure moderators can effectively monitor conversations. Members who wish to communicate in other languages are welcome to use #international, which has dedicated sub-threads for common languages. This rule is about moderation practicality, not language preference.",
+      "category": "server",
+      "severity_default": "low",
+      "tags": ["language", "english", "international", "moderation"],
+      "citation_label": "Rule 15: English in Main Channels"
+    },
+    {
+      "source_id": "rule_016",
+      "rule_number": 16,
+      "title": "No Doxxing or Sharing Personal Info",
+      "description": "Never share another person's real name, address, phone number, workplace, school, photograph, or any other personally identifiable information without their explicit consent. Doxxing is treated as a critical offense and will result in an immediate permanent ban. This also applies to threatening to release someone's personal information.",
+      "category": "conduct",
+      "severity_default": "critical",
+      "tags": ["doxxing", "personal-info", "privacy", "zero-tolerance"],
+      "citation_label": "Rule 16: No Doxxing or Sharing Personal Info"
+    },
+    {
+      "source_id": "rule_017",
+      "rule_number": 17,
+      "title": "Follow Discord TOS",
+      "description": "All members must comply with Discord's Terms of Service and Community Guidelines at all times. This includes the minimum age requirement of 13 years old. Any behavior that violates Discord's platform-level policies may result in a server ban in addition to any action Discord takes on your account.",
+      "category": "server",
+      "severity_default": "medium",
+      "tags": ["discord-tos", "terms-of-service", "platform-rules", "age-requirement"],
+      "citation_label": "Rule 17: Follow Discord TOS"
+    },
+    {
+      "source_id": "rule_018",
+      "rule_number": 18,
+      "title": "One Account Per Person",
+      "description": "Each person may only have one account in CDL Ranked Discord. Alt accounts are not permitted and will be banned on detection. If an alt account is discovered, all associated accounts will be banned. If you are locked out of your original account, contact a moderator in #appeals for assistance before joining on a new account.",
+      "category": "server",
+      "severity_default": "medium",
+      "tags": ["alt-accounts", "one-account", "ban-evasion"],
+      "citation_label": "Rule 18: One Account Per Person"
+    }
+  ]
+}

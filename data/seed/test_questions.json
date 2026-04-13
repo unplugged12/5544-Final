@@ -1,0 +1,144 @@
+{
+  "test_questions": [
+    {
+      "question_id": "tq_001",
+      "question": "hey when does the next tourney start?",
+      "expected_source_type": "faq",
+      "expected_topic": "tournament-schedule",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_002",
+      "question": "how do i sign up for the spring major",
+      "expected_source_type": "faq",
+      "expected_topic": "tournament-signup",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_003",
+      "question": "whats the prize pool for the qualifier",
+      "expected_source_type": "faq",
+      "expected_topic": "prize-pool",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_004",
+      "question": "can i use mnk in tourneys or is it controller only",
+      "expected_source_type": "faq",
+      "expected_topic": "controller-vs-mnk",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_005",
+      "question": "where do i get verified",
+      "expected_source_type": "faq",
+      "expected_topic": "verified-role",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_006",
+      "question": "what rank do u need to play comp",
+      "expected_source_type": "faq",
+      "expected_topic": "rank-requirements",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_007",
+      "question": "yo where can i post my clips",
+      "expected_source_type": "faq",
+      "expected_topic": "clip-sharing",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_008",
+      "question": "what guns are GAd rn",
+      "expected_source_type": "faq",
+      "expected_topic": "banned-weapons",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "tq_009",
+      "question": "my buddy got banned and he wants to know how appeals work here",
+      "expected_source_type": "mod_note",
+      "expected_topic": "appeal-process",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_010",
+      "question": "we need a 4th for wagers tonight anyone know the rules for subs",
+      "expected_source_type": "faq",
+      "expected_topic": "tournament-substitutes",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_011",
+      "question": "is the new map checkpoint in the comp rotation or just pubs",
+      "expected_source_type": "announcement",
+      "expected_topic": "map-rotation",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_012",
+      "question": "someone told me the clan post cooldown changed, whats the new rule",
+      "expected_source_type": "announcement",
+      "expected_topic": "clan-recruitment-rule",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_013",
+      "question": "yo is someone calling me 'free' considered harassment bc a mod warned me for it",
+      "expected_source_type": "mod_note",
+      "expected_topic": "competitive-trash-talk",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_014",
+      "question": "i wanna stream my matches on twitch do i need a delay or something",
+      "expected_source_type": "faq",
+      "expected_topic": "pov-streaming",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_015",
+      "question": "if i drop below gold 3 after the rank reset do i lose my comp role?",
+      "expected_source_type": "announcement",
+      "expected_topic": "rank-reset",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_016",
+      "question": "bro our opponent dced mid match and wont rejoin what do we do about the tourney match",
+      "expected_source_type": "mod_note",
+      "expected_topic": "tournament-dispute",
+      "difficulty": "medium"
+    },
+    {
+      "question_id": "tq_017",
+      "question": "i want to enter the spring major but i only hit gold 3 yesterday and made my account last week, am i eligible or nah",
+      "expected_source_type": "faq",
+      "expected_topic": "tournament-eligibility",
+      "difficulty": "hard"
+    },
+    {
+      "question_id": "tq_018",
+      "question": "someone is spamming our team in general after we beat them in wagers and theyre also posting our gamertags saying we were cheating, what rules does that break",
+      "expected_source_type": "rule",
+      "expected_topic": "multiple-violations",
+      "difficulty": "hard"
+    },
+    {
+      "question_id": "tq_019",
+      "question": "how does ladder points work and do wager wins count toward qualifying for season finals",
+      "expected_source_type": "faq",
+      "expected_topic": "ladder-and-wagers",
+      "difficulty": "hard"
+    },
+    {
+      "question_id": "tq_020",
+      "question": "my teammate wants to stream our spring major match but the other team is saying its against the rules, also can we use discord overlay, and whats the deal with the new patch changes to GAs",
+      "expected_source_type": "faq",
+      "expected_topic": "streaming-overlay-ga-combined",
+      "difficulty": "hard"
+    }
+  ]
+}

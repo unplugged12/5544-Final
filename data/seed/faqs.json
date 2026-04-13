@@ -1,0 +1,244 @@
+{
+  "faqs": [
+    {
+      "source_id": "faq_001",
+      "question": "When is the next tournament?",
+      "answer": "Our next tournament is the Spring Major Qualifier on April 19, 2026. Registration closes April 16. Check #tournament-info for bracket details and sign-up links in #tournament-signup.",
+      "category": "tournaments",
+      "tags": ["tournament", "schedule", "registration"],
+      "citation_label": "FAQ: Tournament Schedule"
+    },
+    {
+      "source_id": "faq_002",
+      "question": "How do I sign up for a tournament?",
+      "answer": "Head to #tournament-signup and follow the pinned registration form. You need a full 4-player roster, and every player must have the Verified role and at least 7 days of server membership. Your team captain submits the roster, and you will receive a confirmation message from the tournament bot.",
+      "category": "tournaments",
+      "tags": ["tournament", "signup", "registration", "roster"],
+      "citation_label": "FAQ: Tournament Sign-Up"
+    },
+    {
+      "source_id": "faq_003",
+      "question": "What is the tournament format?",
+      "answer": "CDL Ranked Discord tournaments follow the standard CDL 4v4 format with three game modes: Hardpoint, Search and Destroy, and Control. Matches are best-of-five with the mode order being HP, SnD, Control, HP, SnD. Map vetoes happen in the tournament lobby five minutes before match start.",
+      "category": "tournaments",
+      "tags": ["tournament", "format", "4v4", "hardpoint", "snd", "control"],
+      "citation_label": "FAQ: Tournament Format"
+    },
+    {
+      "source_id": "faq_004",
+      "question": "Is there an entry fee for tournaments?",
+      "answer": "The Spring Major Qualifier is completely free to enter. Some special events like Wednesday Night Wagers may have optional buy-in tiers, but the main seasonal tournaments are always free. Check #tournament-info for specific event details.",
+      "category": "tournaments",
+      "tags": ["tournament", "entry-fee", "free", "cost"],
+      "citation_label": "FAQ: Tournament Entry Fee"
+    },
+    {
+      "source_id": "faq_005",
+      "question": "What is the prize pool?",
+      "answer": "The Spring Major Qualifier prize pool is $500 in store credit, distributed as $250 to first place, $150 to second, and $100 to third. Prize pool was recently increased from $300 thanks to community support. Prize distribution details are posted in #tournament-info after each event.",
+      "category": "tournaments",
+      "tags": ["tournament", "prize-pool", "rewards"],
+      "citation_label": "FAQ: Prize Pool"
+    },
+    {
+      "source_id": "faq_006",
+      "question": "When is roster lock for the tournament?",
+      "answer": "Roster lock for the Spring Major Qualifier is April 16, 2026, which is also the registration deadline. After roster lock, no changes can be made to your team lineup. If you need a last-minute change before the deadline, contact a tournament admin in #dispute-resolution.",
+      "category": "tournaments",
+      "tags": ["tournament", "roster-lock", "deadline", "registration"],
+      "citation_label": "FAQ: Roster Lock"
+    },
+    {
+      "source_id": "faq_007",
+      "question": "Can I use a substitute player in a tournament?",
+      "answer": "Each team may register one substitute player on their roster during sign-up. The sub must meet the same requirements as all other players: Verified role, 7 days server tenure, and Gold III minimum rank. Subs not listed on the original roster cannot be added after roster lock.",
+      "category": "tournaments",
+      "tags": ["tournament", "substitute", "roster", "player"],
+      "citation_label": "FAQ: Tournament Substitutes"
+    },
+    {
+      "source_id": "faq_008",
+      "question": "Where can I see the tournament bracket?",
+      "answer": "Tournament brackets are posted in #tournament-info once registration closes. We use Challonge for bracket management, and the link is pinned in #tournament-info on the day of the event. You can also follow match results in real time in #match-results.",
+      "category": "tournaments",
+      "tags": ["tournament", "bracket", "challonge", "results"],
+      "citation_label": "FAQ: Tournament Bracket"
+    },
+    {
+      "source_id": "faq_009",
+      "question": "What are Wednesday Night Wagers?",
+      "answer": "Wednesday Night Wagers is our weekly competitive event held every Wednesday at 8pm ET during Season 2. It is a more casual, single-elimination tournament format open to all verified members. No minimum rank is required for Wagers, and it is a great way to practice before bigger events. Check #tournament-info for the full Season 2 schedule.",
+      "category": "tournaments",
+      "tags": ["wednesday-night-wagers", "weekly", "casual-competitive"],
+      "citation_label": "FAQ: Wednesday Night Wagers"
+    },
+    {
+      "source_id": "faq_010",
+      "question": "How do I schedule a match with my opponent?",
+      "answer": "After brackets are posted, reach out to your opponent's team captain via Discord DM or in #competitive to arrange a match time within the allowed window. If you cannot agree on a time, a tournament admin will assign a default time. Failure to show up forfeits the match.",
+      "category": "tournaments",
+      "tags": ["tournament", "scheduling", "match", "opponent"],
+      "citation_label": "FAQ: Match Scheduling"
+    },
+    {
+      "source_id": "faq_011",
+      "question": "What weapons are banned in competitive play?",
+      "answer": "Banned weapons and equipment follow the current Gentleman's Agreements (GAs) for Call of Duty: Black Ops 7 Season 2. The GA list is pinned in #tournament-rules and is updated after each major patch. Currently banned items include certain launchers, specific tactical equipment, and any weapon with a bugged attachment. Always check the pinned GA list before competing.",
+      "category": "competitive",
+      "tags": ["banned-weapons", "gentlemans-agreements", "ga", "meta"],
+      "citation_label": "FAQ: Banned Weapons"
+    },
+    {
+      "source_id": "faq_012",
+      "question": "Is controller or mouse and keyboard required?",
+      "answer": "CDL Ranked Discord tournaments are controller-only to match the official CDL ruleset. Mouse and keyboard players are welcome in the general community but cannot participate in official tournaments. Casual events like Friday Pub Stomp Night allow any input method.",
+      "category": "competitive",
+      "tags": ["controller", "mnk", "input", "rules"],
+      "citation_label": "FAQ: Controller vs MnK"
+    },
+    {
+      "source_id": "faq_013",
+      "question": "What rank do I need to play in tournaments?",
+      "answer": "You must be Gold III or higher in Call of Duty: Black Ops 7 ranked play to enter CDL Ranked Discord tournaments. Your rank is verified through #rank-verify when you apply for the Competitor role. Rank must be maintained at the time of the event, not just at registration.",
+      "category": "competitive",
+      "tags": ["rank-requirement", "gold-iii", "competitive", "verified"],
+      "citation_label": "FAQ: Rank Requirements"
+    },
+    {
+      "source_id": "faq_014",
+      "question": "How does the ladder system work?",
+      "answer": "Our ladder system tracks team performance across all CDL Ranked Discord events during the season. Points are awarded based on tournament placement: first place gets 100 points, second gets 75, third gets 50, and participation earns 10 points. The top 8 ladder teams at the end of Season 2 qualify for the Season Finals.",
+      "category": "competitive",
+      "tags": ["ladder", "points", "rankings", "season"],
+      "citation_label": "FAQ: Ladder System"
+    },
+    {
+      "source_id": "faq_015",
+      "question": "What is the current map rotation?",
+      "answer": "The Season 2 map rotation for competitive play includes six maps. The newest addition is Checkpoint, which was added to the rotation on March 20, 2026. The full active map pool is pinned in #tournament-rules and is updated whenever the GA committee votes on changes.",
+      "category": "competitive",
+      "tags": ["map-rotation", "maps", "competitive", "checkpoint"],
+      "citation_label": "FAQ: Map Rotation"
+    },
+    {
+      "source_id": "faq_016",
+      "question": "How do I report a cheater?",
+      "answer": "If you suspect someone is cheating, submit a report in #report-cheaters with the player's Discord username, the approximate time of the incident, and any evidence you have such as clips or screenshots. Do not publicly accuse players of cheating in #general or #competitive. Our moderation team will review all reports confidentially.",
+      "category": "competitive",
+      "tags": ["cheater", "report", "evidence", "moderation"],
+      "citation_label": "FAQ: Reporting Cheaters"
+    },
+    {
+      "source_id": "faq_017",
+      "question": "What are Gentleman's Agreements?",
+      "answer": "Gentleman's Agreements (GAs) are community-agreed bans on weapons, equipment, or tactics that are considered overpowered or unhealthy for competitive play but are not officially banned by the game developer. GAs are voted on by team captains and tournament admins, and the current list is always pinned in #tournament-rules. Violating a GA during a tournament match is treated as unsportsmanlike conduct under Rule 13.",
+      "category": "competitive",
+      "tags": ["gentlemans-agreements", "ga", "competitive-rules", "bans"],
+      "citation_label": "FAQ: Gentleman's Agreements"
+    },
+    {
+      "source_id": "faq_018",
+      "question": "How do I get the Verified role?",
+      "answer": "To get the Verified role, head to #verify and follow the verification bot instructions. You will need to link your Activision ID and confirm your Discord account. Verification is required before you can post in most channels and is a prerequisite for the Competitor role. The process usually takes under five minutes.",
+      "category": "roles",
+      "tags": ["verified", "role", "verification", "activision-id"],
+      "citation_label": "FAQ: Verified Role"
+    },
+    {
+      "source_id": "faq_019",
+      "question": "How do I get the Competitor role?",
+      "answer": "After you have the Verified role, go to #rank-verify and submit a screenshot of your current ranked play tier showing Gold III or above. A moderator will review your submission and grant the Competitor role within 24 hours. You need the Competitor role to register for any official tournament.",
+      "category": "roles",
+      "tags": ["competitor", "role", "rank-verify", "tournament-access"],
+      "citation_label": "FAQ: Competitor Role"
+    },
+    {
+      "source_id": "faq_020",
+      "question": "How do I apply to be a moderator?",
+      "answer": "Moderator applications open periodically and are announced in #announcements. The most recent application period opened on March 25, 2026. You must have been an active member for at least 30 days, have no active warnings, and be at least 18 years old. Apply through the form linked in #mod-applications.",
+      "category": "roles",
+      "tags": ["moderator", "application", "staff", "mod-applications"],
+      "citation_label": "FAQ: Moderator Applications"
+    },
+    {
+      "source_id": "faq_021",
+      "question": "What roles are available on this server?",
+      "answer": "CDL Ranked Discord has several roles: Member (default), Verified (linked Activision ID), Competitor (Gold III+ verified rank), Streamer (approved content creators), Tournament Admin, Moderator, and Admin. You can see all available roles and their permissions in the #rules channel. Some roles like Streamer can be requested in #mod-applications.",
+      "category": "roles",
+      "tags": ["roles", "permissions", "list", "server-roles"],
+      "citation_label": "FAQ: Role List"
+    },
+    {
+      "source_id": "faq_022",
+      "question": "Can I change my server nickname?",
+      "answer": "Yes, you can change your server nickname as long as it does not impersonate another member, staff, or pro player (Rule 7). Your nickname must be readable and cannot contain offensive language. If your nickname is flagged by a moderator, you will be asked to change it or it will be reset.",
+      "category": "roles",
+      "tags": ["nickname", "display-name", "profile", "rules"],
+      "citation_label": "FAQ: Nickname Changes"
+    },
+    {
+      "source_id": "faq_023",
+      "question": "Where can I share my gameplay clips?",
+      "answer": "Post your gameplay clips, montages, and highlights in #content-share. This is the only channel where self-promotion links to YouTube or Twitch are allowed. Keep clips relevant to Call of Duty: Black Ops 7, and avoid posting the same clip more than once. Clips from CDL Ranked Discord tournaments often get featured on our community stream.",
+      "category": "roles",
+      "tags": ["clips", "content-share", "highlights", "montage"],
+      "citation_label": "FAQ: Sharing Clips"
+    },
+    {
+      "source_id": "faq_024",
+      "question": "What server region does CDL Ranked Discord use?",
+      "answer": "CDL Ranked Discord primarily serves the NA East region. Tournament matches default to NA East servers unless both teams agree on a neutral server. If you experience consistent high ping, reach out in #bot-commands to check your connection status. EU and other regional players are welcome but should be aware of potential latency in competitive matches.",
+      "category": "technical",
+      "tags": ["server-region", "na-east", "ping", "latency"],
+      "citation_label": "FAQ: Server Region"
+    },
+    {
+      "source_id": "faq_025",
+      "question": "What are the hardware requirements for tournaments?",
+      "answer": "You need a stable internet connection with less than 80ms ping to NA East servers, a working microphone for team communication, and a controller for official tournaments. We recommend a wired connection for competitive play. There are no specific console or PC spec requirements beyond being able to run Call of Duty: Black Ops 7 smoothly.",
+      "category": "technical",
+      "tags": ["hardware", "requirements", "internet", "controller"],
+      "citation_label": "FAQ: Hardware Requirements"
+    },
+    {
+      "source_id": "faq_026",
+      "question": "Can I use the Discord overlay during matches?",
+      "answer": "Yes, the Discord overlay is allowed during tournament matches. However, you must disable any overlay elements that display information from other apps or provide a gameplay advantage. Stream overlays showing chat are fine as long as they do not include opponent team communications or stream sniping tools.",
+      "category": "technical",
+      "tags": ["discord-overlay", "streaming", "tournament", "settings"],
+      "citation_label": "FAQ: Discord Overlay"
+    },
+    {
+      "source_id": "faq_027",
+      "question": "Why can't I post in some channels?",
+      "answer": "Most discussion channels require the Verified role before you can post. Tournament-related channels require the Competitor role. If you just joined, head to #verify first to get started. Some channels like #announcements and #rules are read-only for all members except staff.",
+      "category": "technical",
+      "tags": ["permissions", "posting", "channels", "verified"],
+      "citation_label": "FAQ: Posting Permissions"
+    },
+    {
+      "source_id": "faq_028",
+      "question": "Where can I watch tournament streams?",
+      "answer": "Official CDL Ranked Discord tournament streams are broadcast on Twitch at Twitch.tv/CDLRankedDiscord. Stream schedule updates for April 2026 were posted in #announcements on April 1. Community casters rotate each week, and the schedule is pinned in #streaming.",
+      "category": "streaming",
+      "tags": ["stream", "twitch", "broadcast", "watch"],
+      "citation_label": "FAQ: Tournament Streams"
+    },
+    {
+      "source_id": "faq_029",
+      "question": "Can I stream my POV during a tournament match?",
+      "answer": "Yes, but you must have a minimum 2-minute stream delay to prevent stream sniping. Players with the Streamer role can stream their POV on their personal channels. If an opponent reports a player streaming without delay, the streamer may be disqualified from the current match. Apply for the Streamer role in #mod-applications.",
+      "category": "streaming",
+      "tags": ["streaming", "pov", "delay", "streamer-role"],
+      "citation_label": "FAQ: POV Streaming Rules"
+    },
+    {
+      "source_id": "faq_030",
+      "question": "How do I get the Streamer role?",
+      "answer": "The Streamer role is available to content creators who regularly stream or upload Call of Duty: Black Ops 7 content. Apply in #mod-applications with a link to your channel and your average viewer count. There is no minimum follower requirement, but you should have at least a few VODs or uploads. The Streamer role grants access to #streaming and allows you to post links in #content-share more frequently.",
+      "category": "streaming",
+      "tags": ["streamer", "role", "content-creator", "application"],
+      "citation_label": "FAQ: Streamer Role"
+    }
+  ]
+}

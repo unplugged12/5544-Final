@@ -1,0 +1,71 @@
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-indicator__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-indicator__dot--demo {
+  background-color: var(--color-approved);
+  box-shadow: 0 0 8px var(--color-approved);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.status-indicator__dot--live {
+  background-color: var(--color-text-muted);
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px var(--color-approved);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 16px var(--color-approved);
+  }
+}
+
+.status-indicator__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--color-text-muted);
+}
+
+.status-indicator__toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background-color: var(--color-border);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.status-indicator__toggle--on {
+  background-color: var(--color-primary);
+}
+
+.status-indicator__toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.status-indicator__toggle--on .status-indicator__toggle-knob {
+  transform: translateX(18px);
+}

@@ -1,0 +1,164 @@
+{
+  "test_toxic_messages": [
+    {
+      "message_id": "tx_001",
+      "content": "you're literal garbage uninstall the game and never come back nobody wants you here",
+      "expected_violation_type": "harassment",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_001",
+      "explanation": "Targets a specific person with demeaning language and exclusion. Crosses from trash talk into personal attack by telling someone to leave the community."
+    },
+    {
+      "message_id": "tx_002",
+      "content": "imagine being this bad at the game lmao i feel sorry for your parents having to raise someone this useless",
+      "expected_violation_type": "harassment",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_001",
+      "explanation": "Extends from gameplay criticism into personal/family attack. Bringing parents into the insult moves this from competitive banter to harassment."
+    },
+    {
+      "message_id": "tx_003",
+      "content": "im going to find every lobby you join and make sure you never enjoy a single game again you worthless piece of trash",
+      "expected_violation_type": "harassment",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_001",
+      "explanation": "Constitutes a direct threat of persistent targeted harassment and intimidation. The promise to follow and harass across lobbies is bullying behavior."
+    },
+    {
+      "message_id": "tx_004",
+      "content": "of course you play like that, typical [slur] behavior right there cant expect anything better",
+      "expected_violation_type": "hate_speech",
+      "expected_severity": "critical",
+      "expected_rule_match": "rule_002",
+      "explanation": "Uses a racial/ethnic slur to demean another player based on identity. Zero tolerance violation regardless of context."
+    },
+    {
+      "message_id": "tx_005",
+      "content": "go back to where you came from [slur] you dont belong in this server or this game",
+      "expected_violation_type": "hate_speech",
+      "expected_severity": "critical",
+      "expected_rule_match": "rule_002",
+      "explanation": "Combines a discriminatory slur with exclusionary language targeting someone's ethnicity or national origin. Clear hate speech."
+    },
+    {
+      "message_id": "tx_006",
+      "content": "stop being such a [slur] about it its just a game grow up",
+      "expected_violation_type": "hate_speech",
+      "expected_severity": "critical",
+      "expected_rule_match": "rule_002",
+      "explanation": "Uses a homophobic slur as a casual insult. Even when not directed at someone's actual orientation, slur usage is a zero-tolerance violation."
+    },
+    {
+      "message_id": "tx_007",
+      "content": "LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO LETS GOOOOO",
+      "expected_violation_type": "spam",
+      "expected_severity": "low",
+      "expected_rule_match": "rule_003",
+      "explanation": "Excessive repetitive text flooding that disrupts conversation flow. Classic spam behavior even if the intent is celebratory."
+    },
+    {
+      "message_id": "tx_008",
+      "content": "L L L L L L L L L L L L L L L L L L L L ratio ratio ratio ratio ratio ratio ratio ratio ratio",
+      "expected_violation_type": "spam",
+      "expected_severity": "low",
+      "expected_rule_match": "rule_003",
+      "explanation": "Rapid-fire repetitive characters and words designed to flood the chat. Disrupts normal conversation even if each individual word is harmless."
+    },
+    {
+      "message_id": "tx_009",
+      "content": "yo everybody come check out my stream twitch.tv/xXsn1perXx im live rn doing ranked grind drop a follow if you want to see some nasty clips",
+      "expected_violation_type": "self_promo",
+      "expected_severity": "low",
+      "expected_rule_match": "rule_004",
+      "explanation": "Self-promotion with a Twitch link posted in a general discussion channel instead of #content-share. Violates the designated channel requirement for promotional content."
+    },
+    {
+      "message_id": "tx_010",
+      "content": "subscribe to my youtube channel youtube.com/procodplayer for the best BO7 content and guides use code PRO for 10% off gamer supps",
+      "expected_violation_type": "self_promo",
+      "expected_severity": "low",
+      "expected_rule_match": "rule_004",
+      "explanation": "Promotional content with YouTube link and sponsor code posted outside #content-share. Combines self-promotion with commercial advertising."
+    },
+    {
+      "message_id": "tx_011",
+      "content": "i just datamined the new season 3 weapons and theres a broken AR coming that has zero recoil here are the full stats and attachments",
+      "expected_violation_type": "spoiler",
+      "expected_severity": "medium",
+      "expected_rule_match": "rule_005",
+      "explanation": "Sharing datamined unreleased weapon information without spoiler tags and outside of #leaks-spoilers channel."
+    },
+    {
+      "message_id": "tx_012",
+      "content": "leaked gameplay footage of the new map dropping next season check this out before activision takes it down",
+      "expected_violation_type": "spoiler",
+      "expected_severity": "medium",
+      "expected_rule_match": "rule_005",
+      "explanation": "Sharing leaked gameplay footage of unreleased content outside the designated #leaks-spoilers channel without proper spoiler tags."
+    },
+    {
+      "message_id": "tx_013",
+      "content": "selling iridescent account with all camos unlocked dm me $50 paypal only serious buyers",
+      "expected_violation_type": "account_trading",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_008",
+      "explanation": "Directly advertising account selling with pricing and payment method. Clear violation of the account trading prohibition."
+    },
+    {
+      "message_id": "tx_014",
+      "content": "anyone need boosting? i can get you from silver to diamond in one session guaranteed $20 per tier dm me for details",
+      "expected_violation_type": "account_trading",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_008",
+      "explanation": "Advertising paid boosting services which modify another player's account rank for money. Falls under account trading and selling services."
+    },
+    {
+      "message_id": "tx_015",
+      "content": "this new aimbot tool is insane you can get it from [website] its completely undetected right now been using it for weeks in ranked",
+      "expected_violation_type": "cheating_promo",
+      "expected_severity": "critical",
+      "expected_rule_match": "rule_009",
+      "explanation": "Actively promoting and sharing information about cheat software, naming a source, and admitting to using it in ranked play. Critical zero-tolerance violation."
+    },
+    {
+      "message_id": "tx_016",
+      "content": "bro the walls in this game are so thin i can literally see people through them with this new tool anyone want the download link",
+      "expected_violation_type": "cheating_promo",
+      "expected_severity": "critical",
+      "expected_rule_match": "rule_009",
+      "explanation": "Describing and offering to distribute wallhack software. Promoting cheat tools and offering to share them is a critical violation."
+    },
+    {
+      "message_id": "tx_017",
+      "content": "gg lets just throw the next two maps so we can drop to losers bracket and get an easier path to finals, the other team already agreed",
+      "expected_violation_type": "tournament_misconduct",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_013",
+      "explanation": "Openly discussing match-fixing and intentional losing to manipulate bracket seeding. Collusion with another team constitutes a severe competitive integrity violation."
+    },
+    {
+      "message_id": "tx_018",
+      "content": "im done with this garbage team im leaving mid series yall can play 3v4 for all i care this whole tournament is rigged anyway",
+      "expected_violation_type": "tournament_misconduct",
+      "expected_severity": "high",
+      "expected_rule_match": "rule_013",
+      "explanation": "Announcing intentional disconnect and forfeit during an active tournament match. Ragequitting mid-series constitutes unsportsmanlike behavior and intentional disconnect."
+    },
+    {
+      "message_id": "tx_019",
+      "content": "LLLLLLLLLLLLL LLLLLLLLLLLLL LLLLLLLLLLLLL cope cope cope cope cope cope LLLLLLLLL seethe seethe seethe seethe ratio ratio ratio ratio",
+      "expected_violation_type": "spam",
+      "expected_severity": "low",
+      "expected_rule_match": "rule_003",
+      "explanation": "Repetitive text flooding combining multiple spam patterns. Clearly designed to disrupt the channel rather than contribute to conversation."
+    },
+    {
+      "message_id": "tx_020",
+      "content": "keep talking tough kid i know what school you go to dont make me post your info in here everyone will know exactly who you are",
+      "expected_violation_type": "harassment",
+      "expected_severity": "critical",
+      "expected_rule_match": "rule_001",
+      "explanation": "Threatening to doxx someone by revealing their school and personal information. While this also implicates Rule 16 (doxxing), the primary violation is the threatening and intimidating nature directed at a specific person, constituting severe harassment."
+    }
+  ]
+}

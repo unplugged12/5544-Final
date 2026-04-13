@@ -1,0 +1,84 @@
+{
+  "mod_notes": [
+    {
+      "source_id": "mod_001",
+      "title": "Repeat Offender Escalation",
+      "content": "When a user has 2+ warnings within 30 days, escalate to a 24-hour timeout on the next offense. If the user has 3+ timeouts in 90 days, bring to #mod-discussion for potential ban vote. Always check /modlog before issuing punishment to see prior history. Document the escalation rationale in #mod-log when moving from warnings to timeouts.",
+      "context": "escalation",
+      "tags": ["escalation", "repeat-offender", "timeout", "ban"],
+      "citation_label": "Mod Note: Repeat Offender Escalation"
+    },
+    {
+      "source_id": "mod_002",
+      "title": "Timeout vs Ban Guidelines",
+      "content": "Use timeouts (1-hour, 24-hour, or 7-day) for first-time or low-severity offenses like spam, off-topic posting, or mild conduct issues. Reserve permanent bans for critical-severity violations: hate speech (Rule 2), cheating promotion (Rule 9), doxxing (Rule 16), or repeat offenders who have exhausted the escalation path. Temporary bans of 14-30 days may be used as an intermediate step between extended timeouts and permanent bans. All bans require at least two moderators to agree unless the violation is a clear-cut critical offense.",
+      "context": "procedure",
+      "tags": ["timeout", "ban", "guidelines", "severity", "procedure"],
+      "citation_label": "Mod Note: Timeout vs Ban Guidelines"
+    },
+    {
+      "source_id": "mod_003",
+      "title": "Appeal Process",
+      "content": "All appeals are submitted through #appeals. Moderators should acknowledge receipt of an appeal within 24 hours. The moderator who issued the original punishment should not be the sole reviewer of the appeal. Appeals for permanent bans must be reviewed by at least two senior moderators. If an appeal is granted, remove the punishment and log the reversal in #mod-log with the reason. Users may submit one appeal per punishment; repeated appeals for the same action should be denied.",
+      "context": "appeal",
+      "tags": ["appeal", "process", "review", "reversal"],
+      "citation_label": "Mod Note: Appeal Process"
+    },
+    {
+      "source_id": "mod_004",
+      "title": "Common False Positives in Toxicity Detection",
+      "content": "Our auto-moderation bot flags several phrases that are commonly used as standard competitive banter and should not be actioned without context review. Examples include: 'you're free' (meaning easy to beat), 'that's disgusting' (meaning impressive play), 'he's one-shot' (callout, not an insult), 'you're trolling' (meaning playing poorly), and 'diff' as in 'AR diff' (skill gap reference). Review the surrounding conversation before issuing warnings on flagged messages that contain these phrases. When in doubt, check with another moderator.",
+      "context": "false-positive",
+      "tags": ["false-positive", "auto-mod", "competitive-slang", "context"],
+      "citation_label": "Mod Note: Common False Positives"
+    },
+    {
+      "source_id": "mod_005",
+      "title": "Handling Tournament Disputes",
+      "content": "All tournament disputes must go through #dispute-resolution. Collect evidence from both sides before making a ruling: screenshots of the match lobby, player recordings if available, and written accounts from both teams. For disconnection disputes, check if the player attempted to reconnect within 5 minutes. A tournament admin must make the final ruling, not a general moderator. If evidence is inconclusive, the default ruling is to replay the map. Document all dispute resolutions in #mod-log.",
+      "context": "dispute",
+      "tags": ["tournament", "dispute", "evidence", "resolution", "replay"],
+      "citation_label": "Mod Note: Tournament Dispute Handling"
+    },
+    {
+      "source_id": "mod_006",
+      "title": "When to Involve Senior Mods",
+      "content": "Escalate to senior moderators or admins in the following situations: potential permanent bans, doxxing incidents (Rule 16), suspected coordinated raids, disputes involving Competitor-role or Streamer-role members with large followings, any situation where a moderator has a personal conflict of interest, and cases where two moderators disagree on the appropriate action. Tag @Senior Mod in #mod-discussion for urgent escalations. Do not delay action on critical-severity violations while waiting for a senior mod; issue a temporary timeout first.",
+      "context": "escalation",
+      "tags": ["escalation", "senior-mod", "admin", "conflict-of-interest"],
+      "citation_label": "Mod Note: Senior Mod Escalation"
+    },
+    {
+      "source_id": "mod_007",
+      "title": "Post-Match Toxicity Protocol",
+      "content": "After tournament matches, there is a 15-minute cool-down window where moderators should monitor #competitive and #general closely for heated exchanges. During this window, issue verbal warnings in chat before formal punishments unless the offense is critical-severity. Players are often emotional after close losses and may say things they would not normally say. If a player is venting frustration about the game or their own performance, that is generally acceptable. Redirect personal attacks toward specific opponents immediately with a warning.",
+      "context": "procedure",
+      "tags": ["post-match", "cool-down", "tournament", "toxicity", "verbal-warning"],
+      "citation_label": "Mod Note: Post-Match Toxicity Protocol"
+    },
+    {
+      "source_id": "mod_008",
+      "title": "Raid Response Procedure",
+      "content": "If the server is being raided (mass join + spam from multiple new accounts), immediately enable verification-level 'High' in server settings and activate slow mode (30 seconds) in all public channels. Delete raid messages in bulk using the bot's purge command. Do not engage with raiders individually. Tag @Admin in #mod-discussion and log the raid in #mod-log with approximate start time, number of accounts, and content type. After the raid subsides, review recently joined accounts and ban any remaining raid participants.",
+      "context": "procedure",
+      "tags": ["raid", "emergency", "slow-mode", "verification", "purge"],
+      "citation_label": "Mod Note: Raid Response Procedure"
+    },
+    {
+      "source_id": "mod_009",
+      "title": "Handling Cheating Accusations",
+      "content": "When a player accuses another of cheating in #report-cheaters or publicly in chat, do not confirm or deny the accusation publicly. Move public accusations to #report-cheaters and remind the accuser that cheating reports are handled confidentially. Collect any evidence provided (clips, screenshots, theater mode footage). Forward the evidence to a tournament admin for review. Do not take action against the accused based solely on another player's word. If the accusation is unfounded and the accuser is harassing the other player, that itself may be a Rule 1 violation.",
+      "context": "dispute",
+      "tags": ["cheating", "accusation", "evidence", "confidential", "report"],
+      "citation_label": "Mod Note: Cheating Accusations"
+    },
+    {
+      "source_id": "mod_010",
+      "title": "Cultural Context for Competitive Trash Talk",
+      "content": "Competitive FPS communities have a distinct communication style that can appear aggressive to outsiders. Standard competitive banter that is NOT a violation includes: 'you're free' (easy to beat), 'no shot' (disbelief), 'bot' (playing like an AI), 'he's chalked' (done for), 'faded' (made a bad decision), 'get turned on' (outplayed after being caught off guard), and general statements about gameplay skill. These become violations ONLY when combined with personal attacks, identity-based insults, or persistent targeting. Phrases that are ALWAYS a violation regardless of context: 'kys' or any variant, real-life threats, identity-based slurs, and doxxing threats. When reviewing flagged messages, consider whether the statement is about gameplay or about the person.",
+      "context": "false-positive",
+      "tags": ["trash-talk", "competitive-culture", "context", "banter", "false-positive"],
+      "citation_label": "Mod Note: Competitive Trash Talk Context"
+    }
+  ]
+}

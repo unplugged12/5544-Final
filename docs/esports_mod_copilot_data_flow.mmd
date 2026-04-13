@@ -1,0 +1,86 @@
+flowchart TD
+    subgraph Discord["Discord Server (Sandbox Call of Duty Community)"]
+        U1["Community User"]
+        U2["Moderator"]
+        CH1["General / FAQ Channel"]
+        CH2["Announcements Channel"]
+        CH3["Sandbox Moderation Channel"]
+    end
+
+    subgraph Bot["Discord Bot Layer"]
+        C1["/askfaq"]
+        C2["/summarize"]
+        C3["/moddraft"]
+        C4["Passive Message Monitor"]
+        C5["Delete / Warn / Log Action"]
+    end
+
+    subgraph App["FastAPI Backend"]
+        A1["Request Router"]
+        A2["Prompt Builder"]
+        A3["Moderation Engine"]
+        A4["Citation Formatter"]
+        A5["Mode Switch: Demo vs Review"]
+    end
+
+    subgraph Data["Knowledge and Storage"]
+        D1["SQLite\nconfig + logs + moderation history"]
+        D2["Chroma\nvector index for rules / FAQs / announcements / mod notes"]
+        D3["Seeded Data Loader"]
+    end
+
+    subgraph Providers["LLM Providers"]
+        L1["OpenAI (Primary)"]
+        L2["Anthropic (Fallback)"]
+        L3["Ollama (Optional Future Adapter)"]
+    end
+
+    subgraph Dashboard["One-Page Web Dashboard"]
+        W1["Knowledge Base Tabs"]
+        W2["Flagged Queue"]
+        W3["History Log"]
+        W4["Settings / Demo Mode"]
+    end
+
+    U1 --> CH1 --> C1
+    U2 --> CH2 --> C2
+    U2 --> CH3 --> C3
+    CH3 --> C4
+
+    C1 --> A1
+    C2 --> A1
+    C3 --> A1
+    C4 --> A3
+
+    A1 --> A2
+    A3 --> A5
+    A2 --> D2
+    A3 --> D2
+    A3 --> D1
+    D3 --> D2
+    D3 --> D1
+
+    A2 --> L1
+    A2 --> L2
+    A2 --> L3
+    A3 --> L1
+    A3 --> L2
+    A3 --> L3
+
+    L1 --> A4
+    L2 --> A4
+    L3 --> A4
+
+    A4 --> C1
+    A4 --> C2
+    A4 --> C3
+
+    A5 -->|Demo Mode ON| C5
+    A5 -->|Demo Mode OFF| W2
+    W2 -->|Approve| C5
+    W2 -->|Reject or Dismiss| D1
+
+    C5 --> D1
+    D1 --> W3
+    D2 --> W1
+    W4 --> D1
