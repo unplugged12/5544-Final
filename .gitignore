@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+
+# Generated data (re-create with: python data/ingest.py)
+data/copilot.db
+data/chroma/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+frontend/dist/
+
+# Test
+coverage/
+htmlcov/
+.pytest_cache/
+.coverage

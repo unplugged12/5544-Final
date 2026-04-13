@@ -1,0 +1,74 @@
+{
+  "test_edge_cases": [
+    {
+      "case_id": "ec_001",
+      "content": "dude you are ACTUALLY the worst player I have ever seen in ranked lmaooo",
+      "ambiguity_reason": "Could be friendly banter between teammates or targeted harassment depending on context and relationship. The use of 'ACTUALLY' and 'lmaooo' suggests playful exaggeration, but without knowing the relationship between the users, this could also be demeaning.",
+      "possible_violations": ["harassment", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_002",
+      "content": "oh wow great job team really incredible performance there we definitely deserved to lose that one",
+      "ambiguity_reason": "Heavy sarcasm that could be read as passive-aggressive harassment toward teammates or as a frustrated player venting after a loss. The lack of direct personal attack and the inclusive 'we' suggests frustration rather than targeting, but the sarcastic tone could be perceived as belittling.",
+      "possible_violations": ["harassment", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_003",
+      "content": "that guy in our lobby last game was absolute dog water bro like genuinely the worst AR player ive ever seen in gold he should not be at this rank",
+      "ambiguity_reason": "Complaining about a specific unnamed player's skill level after a match. Could be venting frustration about matchmaking or could cross into targeted harassment if the player is identifiable in the conversation. The phrasing is about gameplay performance but the intensity and sustained focus on one person is borderline.",
+      "possible_violations": ["harassment", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_004",
+      "content": "hey mods this guy in the vc just said '[slur]' and i wanted to report it, his exact words were 'youre a [slur] if you use that gun'",
+      "ambiguity_reason": "The user is quoting a slur in the context of reporting another user's violation. The message itself contains hate speech content but the intent is to report, not to perpetuate. The reporter should be directed to #report-cheaters rather than punished, but the quoted content still contains a slur in the channel.",
+      "possible_violations": ["hate_speech", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_005",
+      "content": "is selling your cod account against the rules here? my friend wants to know if he can post about it or if thats not allowed",
+      "ambiguity_reason": "The user is asking about the rule rather than violating it. However, this could also be a way of testing whether account selling is moderated before posting an actual advertisement. The 'asking for a friend' framing adds uncertainty about intent.",
+      "possible_violations": ["account_trading", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_006",
+      "content": "bro you are actually FADED for challing that you are so free its unreal like actually uninstall your controller im CRYING rn",
+      "ambiguity_reason": "Uses intense competitive FPS slang ('faded', 'free', 'uninstall your controller') that reads as harassment to outsiders but is standard competitive banter in the CoD community. The phrases 'you are so free' and 'uninstall your controller' are common trash talk but the sustained intensity and multiple insults stacked together push it toward the line.",
+      "possible_violations": ["harassment", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_007",
+      "content": "According to all known laws of competitive Call of Duty there is no way that a sub machine gun should be able to three shot across the map. The SMG of course three shots anyway because SMGs dont care what humans think is balanced. Yellow black yellow black yellow black ooh smg and AR let me pick AR",
+      "ambiguity_reason": "A modified copypasta (Bee Movie) adapted for Call of Duty context. A single long joke post could be considered spam under Rule 3 or could be seen as a humorous community contribution. The length is disruptive but it is a single message, not rapid-fire posting.",
+      "possible_violations": ["spam", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_008",
+      "content": "just dropped a nasty 4-piece to close out the hardpoint check it out twitch.tv/mystream the clip is insane you gotta see this play",
+      "ambiguity_reason": "The user is sharing a clip with a Twitch link in what could be #general rather than #content-share. However, the context is sharing a specific play from a recent match rather than generic self-promotion. The line between sharing a moment and promoting a channel is blurred when a Twitch link is involved.",
+      "possible_violations": ["self_promo", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_009",
+      "content": "this game is actually unplayable the devs have ruined everything season 2 is the worst update ive ever seen in any cod im so done with this garbage",
+      "ambiguity_reason": "Strong negativity directed at the game and its developers rather than at community members. Venting frustration about the game itself is generally allowed, but excessive negativity can create a toxic atmosphere. The language is harsh ('garbage', 'unplayable') but targets the product, not people in the server.",
+      "possible_violations": ["harassment", "no_violation"],
+      "expected_action": "flag_for_review"
+    },
+    {
+      "case_id": "ec_010",
+      "content": "bro my aim is so good rn people keep accusing me of cheating lol i literally dont miss im built different call me aimbot because i lock on to heads automatically",
+      "ambiguity_reason": "The user is bragging about their aim using hyperbolic language that references cheating ('call me aimbot', 'lock on to heads automatically'). This could be standard boasting about skill or could be a veiled admission of actually using aim assistance software. The joking tone suggests bragging, but the specific cheat terminology could warrant a closer look under Rule 9.",
+      "possible_violations": ["cheating_promo", "no_violation"],
+      "expected_action": "flag_for_review"
+    }
+  ]
+}

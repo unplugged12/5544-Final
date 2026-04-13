@@ -1,0 +1,112 @@
+{
+  "announcements": [
+    {
+      "source_id": "ann_001",
+      "title": "Spring Major Qualifier -- Registration Open",
+      "content": "Registration is now open for the CDL Ranked Discord Spring Major Qualifier! Date: April 19, 2026. Format: 4v4 Hardpoint/S&D/Control, best-of-five series. Entry: Free. Prize pool: $500 in store credit ($250/$150/$100 split). Teams must register in #tournament-signup by April 16, 2026. All players must have the Verified role and at least 7 days of server membership. Full rules and GA list are posted in #tournament-rules. Good luck to all competitors!",
+      "date": "2026-04-01",
+      "category": "tournament",
+      "tags": ["tournament", "spring-major", "registration"],
+      "citation_label": "Announcement: Spring Major Qualifier (Apr 1)"
+    },
+    {
+      "source_id": "ann_002",
+      "title": "BO7 Season 2 Patch Notes -- GA Impact",
+      "content": "Call of Duty: Black Ops 7 Season 2 patch 1.2.4 dropped today with significant weapon tuning changes. The GA committee met last night and has updated the Gentleman's Agreements list for competitive play. Three previously GA'd weapons have been un-GA'd due to nerfs, and one new SMG attachment has been added to the restricted list. The updated GA list is now pinned in #tournament-rules. All teams competing in the Spring Major Qualifier should review the changes before April 19. If you have questions about specific items, discuss in #competitive.",
+      "date": "2026-03-28",
+      "category": "patch",
+      "tags": ["patch-notes", "season-2", "gentlemans-agreements", "weapon-tuning"],
+      "citation_label": "Announcement: BO7 Season 2 Patch (Mar 28)"
+    },
+    {
+      "source_id": "ann_003",
+      "title": "Roster Change Deadline Reminder",
+      "content": "This is your reminder that the roster change deadline for the Spring Major Qualifier is April 16, 2026. After this date, no roster swaps or substitute additions will be accepted. If you need to make changes to your team, update your registration in #tournament-signup before the deadline. Teams without a complete 4-player roster by April 16 will be removed from the bracket. Contact a tournament admin in #dispute-resolution if you have extenuating circumstances.",
+      "date": "2026-04-05",
+      "category": "roster",
+      "tags": ["roster", "deadline", "spring-major", "tournament"],
+      "citation_label": "Announcement: Roster Deadline Reminder (Apr 5)"
+    },
+    {
+      "source_id": "ann_004",
+      "title": "Server Maintenance -- April 12",
+      "content": "CDL Ranked Discord will undergo scheduled maintenance on April 12, 2026, from 2:00 AM to 6:00 AM ET. During this window, our tournament bot, verification bot, and moderation bot will be offline. Voice channels may experience brief disconnections. This maintenance is to upgrade our bot infrastructure and should not affect any stored data. Please avoid submitting tournament registrations or rank verifications during this window. Normal operations will resume by 6:00 AM ET.",
+      "date": "2026-04-08",
+      "category": "maintenance",
+      "tags": ["maintenance", "downtime", "bots", "infrastructure"],
+      "citation_label": "Announcement: Server Maintenance (Apr 8)"
+    },
+    {
+      "source_id": "ann_005",
+      "title": "New Map 'Checkpoint' Added to Competitive Rotation",
+      "content": "The GA committee has voted to add the new map Checkpoint to the competitive rotation for Call of Duty: Black Ops 7 Season 2. Checkpoint will be available for Hardpoint and Control modes in all CDL Ranked Discord tournaments effective immediately. The map was evaluated over the past two weeks in scrimmage play and received majority approval from team captains. The updated map pool is pinned in #tournament-rules. Use #competitive to discuss strategies and callouts for the new map.",
+      "date": "2026-03-20",
+      "category": "patch",
+      "tags": ["new-map", "checkpoint", "map-rotation", "competitive"],
+      "citation_label": "Announcement: New Map Checkpoint (Mar 20)"
+    },
+    {
+      "source_id": "ann_006",
+      "title": "Rule Update: Clan Recruitment Cooldown Changed to 48 Hours",
+      "content": "Effective today, the clan recruitment posting cooldown in #clan-recruitment has been changed from 24 hours to 48 hours per clan. This change was made to reduce repetitive posts and give all teams fair visibility. Rule 14 has been updated accordingly. Clans that post more frequently than once every 48 hours will have their messages deleted and receive a warning. If your clan is actively recruiting for the Spring Major Qualifier, you can also post in #ranked-lfg with an LFG tag.",
+      "date": "2026-03-15",
+      "category": "rule-update",
+      "tags": ["rule-update", "clan-recruitment", "cooldown", "policy"],
+      "citation_label": "Announcement: Clan Recruitment Rule Update (Mar 15)"
+    },
+    {
+      "source_id": "ann_007",
+      "title": "Wednesday Night Wagers -- Season 2 Schedule",
+      "content": "The full Wednesday Night Wagers schedule for Season 2 (Spring 2026) is now posted! Wagers run every Wednesday at 8pm ET from March 11 through May 27, 2026. Format is single-elimination 4v4 with a relaxed GA list. No minimum rank requirement for Wagers, but you must have the Verified role. Sign-ups open each Wednesday at noon ET in #tournament-signup. There will be no Wagers on April 16 due to the Spring Major Qualifier prep week. See the full schedule pinned in #tournament-info.",
+      "date": "2026-03-10",
+      "category": "tournament",
+      "tags": ["wednesday-night-wagers", "schedule", "season-2", "weekly"],
+      "citation_label": "Announcement: Wednesday Night Wagers Schedule (Mar 10)"
+    },
+    {
+      "source_id": "ann_008",
+      "title": "Community Movie Night Rescheduled",
+      "content": "Unfortunately, the Community Movie Night originally planned for Friday April 10 has been rescheduled to Friday April 17, 2026, at 9pm ET. This is due to a scheduling conflict with the Friday Pub Stomp Night special event on April 10. Movie Night will now take place the Friday before the Spring Major Qualifier. Join us in the main voice channel for the watch party. The movie poll will go up in #general on April 14.",
+      "date": "2026-04-06",
+      "category": "community",
+      "tags": ["community", "movie-night", "rescheduled", "social"],
+      "citation_label": "Announcement: Movie Night Rescheduled (Apr 6)"
+    },
+    {
+      "source_id": "ann_009",
+      "title": "Stream Schedule Update for April",
+      "content": "The CDL Ranked Discord official stream schedule for April 2026 has been updated on our Twitch channel at Twitch.tv/CDLRankedDiscord. We will be streaming every Wednesday Night Wagers event and the full Spring Major Qualifier on April 19. Community casters will rotate weekly, and the casting schedule is pinned in #streaming. If you are interested in casting, apply for the Streamer role in #mod-applications. POV streaming rules remain the same: minimum 2-minute delay required.",
+      "date": "2026-04-01",
+      "category": "streaming",
+      "tags": ["streaming", "schedule", "twitch", "casting"],
+      "citation_label": "Announcement: Stream Schedule April (Apr 1)"
+    },
+    {
+      "source_id": "ann_010",
+      "title": "Prize Pool Increase -- $300 to $500",
+      "content": "Great news! Thanks to community support and new sponsorship, the Spring Major Qualifier prize pool has been increased from $300 to $500 in store credit. The new distribution is $250 for first place, $150 for second, and $100 for third. This increase applies to the April 19 event only. We are exploring ways to maintain the higher prize pool for future events. Thank you to everyone who has helped grow CDL Ranked Discord this season!",
+      "date": "2026-04-03",
+      "category": "tournament",
+      "tags": ["prize-pool", "increase", "spring-major", "sponsorship"],
+      "citation_label": "Announcement: Prize Pool Increase (Apr 3)"
+    },
+    {
+      "source_id": "ann_011",
+      "title": "Seasonal Rank Reset Coming April 25",
+      "content": "Call of Duty: Black Ops 7 will be performing a seasonal rank reset on April 25, 2026, as part of the mid-season update. All ranked play tiers will be soft-reset by approximately two tiers. This means your Competitor role on CDL Ranked Discord will remain active, but you will need to re-verify your rank within 14 days of the reset if it drops below Gold III. Head to #rank-verify after the reset to update your rank screenshot. Players who do not re-verify by May 9 will have their Competitor role temporarily removed.",
+      "date": "2026-04-07",
+      "category": "patch",
+      "tags": ["rank-reset", "seasonal", "competitor-role", "verification"],
+      "citation_label": "Announcement: Seasonal Rank Reset (Apr 7)"
+    },
+    {
+      "source_id": "ann_012",
+      "title": "New Moderator Applications Open",
+      "content": "CDL Ranked Discord is looking for new moderators to join our team! Applications are now open in #mod-applications. Requirements: must be at least 18 years old, have been an active member for at least 30 days, have no active warnings or timeouts, and be available for at least 10 hours per week of moderation coverage. Experience with Discord moderation bots is a plus but not required. Applications close April 15, 2026. Selected candidates will go through a two-week trial period. Apply today and help us keep this community great!",
+      "date": "2026-03-25",
+      "category": "community",
+      "tags": ["moderator", "applications", "staff", "hiring"],
+      "citation_label": "Announcement: Moderator Applications (Mar 25)"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+.rule-match-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  white-space: nowrap;
+}

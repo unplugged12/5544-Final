@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__MCP_DOCKER__obsidian_get_file_contents",
+      "mcp__MCP_DOCKER__obsidian_append_content",
+      "Bash(npx vite:*)",
+      "mcp__MCP_DOCKER__obsidian_patch_content",
+      "WebSearch",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); msgs=data['test_toxic_messages']; print\\(f'Count: {len\\(msgs\\)}'\\); [print\\(f'  {m[\\\\\"message_id\\\\\"]}: {m[\\\\\"category\\\\\"]} | {m[\\\\\"expected_severity\\\\\"]}'\\) for m in msgs[:5]]\")",
+      "Bash(python3 -c \"import json; data=json.load\\(open\\('/c/Users/unplugged12/repos/unplugged12/5544-Final/data/seed/test_toxic_messages.json'\\)\\); msgs=data['test_toxic_messages']; print\\(f'Count: {len\\(msgs\\)}'\\); [print\\(f'  {m[\\\\\"message_id\\\\\"]}: {m[\\\\\"violation_type\\\\\"]} | {m[\\\\\"expected_severity\\\\\"]} | rule={m[\\\\\"expected_rule_match\\\\\"]}'\\) for m in msgs[:5]]\")",
+      "Bash(python3 -c \"import json; data=json.load\\(open\\('C:/Users/unplugged12/repos/unplugged12/5544-Final/data/seed/test_toxic_messages.json'\\)\\); msgs=data['test_toxic_messages']; print\\(f'Count: {len\\(msgs\\)}'\\); [print\\(f'  {m[\\\\\"message_id\\\\\"]}: {m[\\\\\"violation_type\\\\\"]} | {m[\\\\\"expected_severity\\\\\"]} | rule={m[\\\\\"expected_rule_match\\\\\"]}'\\) for m in msgs[:5]]\")"
+    ]
+  }
+}
