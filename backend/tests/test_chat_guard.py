@@ -78,6 +78,22 @@ class TestSanitizeInputLinks:
         assert "https://" not in result
         assert result.count("[link redacted]") == 2
 
+    # --- P1 fix: case-insensitive URL matching ---
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "visit HTTPS://attacker.com/steal now",
+            "Http://attacker.com is bad",
+            "HTTP://attacker.com/path",
+        ],
+    )
+    def test_uppercase_scheme_urls_replaced_in_sanitize_input(self, text):
+        """Mixed-case URL schemes must be caught and replaced with [link redacted]."""
+        result = sanitize_input(text)
+        assert "attacker.com" not in result
+        assert "[link redacted]" in result
+
 
 class TestSanitizeInputControlAndZeroWidth:
     def test_strips_control_chars_except_newline_and_tab(self):
@@ -181,6 +197,28 @@ class TestScrubOutputUrlFiltering:
         with patch.object(settings, "CHAT_ALLOWED_URL_DOMAINS", "example.com"):
             result = scrub_output("evil https://evil.com/steal")
         assert "evil.com" not in result
+
+    # --- P1 fix: case-insensitive URL matching in scrub_output ---
+
+    def test_uppercase_scheme_disallowed_url_removed(self):
+        """HTTPS:// (uppercased scheme) pointing to disallowed domain must be removed."""
+        result = scrub_output("check HTTPS://evil.com/path for info")
+        assert "evil.com" not in result
+
+    def test_mixed_case_scheme_disallowed_url_removed(self):
+        """Http:// (mixed-case scheme) pointing to disallowed domain must be removed."""
+        result = scrub_output("visit Http://evil.com now")
+        assert "evil.com" not in result
+
+    def test_uppercase_scheme_allowed_domain_preserved(self):
+        """HTTPS:// pointing to an allowed domain must be kept."""
+        result = scrub_output("see HTTPS://discord.com/channels/1/2 for the link")
+        assert "discord.com/channels/1/2" in result
+
+    def test_uppercase_scheme_subdomain_allowed_preserved(self):
+        """HTTPS:// on a subdomain of the allowed domain must be kept."""
+        result = scrub_output("image at HTTPS://cdn.discord.com/x")
+        assert "cdn.discord.com" in result
 
 
 class TestScrubOutputSecretRedaction:

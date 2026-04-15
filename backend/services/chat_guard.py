@@ -27,8 +27,8 @@ _RE_USER_MENTION = re.compile(r"<@!?\d+>")
 # Markdown hyperlink title: [title](url) — keep url, drop title
 _RE_MD_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^\)]+)\)")
 
-# Raw URLs
-_RE_RAW_URL = re.compile(r"https?://\S+")
+# Raw URLs — case-insensitive so HTTPS://, Http://, etc. are all caught (RFC 3986 §3.1)
+_RE_RAW_URL = re.compile(r"https?://\S+", re.IGNORECASE)
 
 # Control characters (ASCII < 0x20) except \n (0x0A) and \t (0x09)
 _RE_CTRL = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]")
