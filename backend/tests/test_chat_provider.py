@@ -180,19 +180,24 @@ async def test_anthropic_generate_chat_reply_passes_system_as_top_level_kwarg():
 
 @pytest.mark.asyncio
 async def test_provider_service_dispatches_generate_chat_reply():
-    """provider_service.call('generate_chat_reply', ...) round-trips correctly."""
+    """provider_service.call('generate_chat_reply', ...) exercises the real dispatch.
+
+    The mock target is _PROVIDERS["openai"].generate_chat_reply — one layer BELOW
+    provider_service.call — so the real dispatch logic runs: provider lookup via
+    _get_provider, getattr resolution of method_name, and kwargs forwarding via
+    await fn(**kwargs).  If any of those steps break, this test fails.
+    """
+    import services.provider_service as _ps
+
     expected = ProviderResponse(
         text="locked in, checking that",
         provider_name="openai",
         model="gpt-4o-mini",
         usage={"prompt_tokens": 20, "completion_tokens": 5},
     )
+    mock_method = AsyncMock(return_value=expected)
 
-    with patch(
-        "services.provider_service.call",
-        new_callable=AsyncMock,
-        return_value=expected,
-    ) as mock_call:
+    with patch.object(_ps._PROVIDERS["openai"], "generate_chat_reply", mock_method):
         from services import provider_service
 
         result = await provider_service.call(
@@ -202,8 +207,7 @@ async def test_provider_service_dispatches_generate_chat_reply():
             max_tokens=MAX_TOKENS,
         )
 
-    mock_call.assert_awaited_once_with(
-        "generate_chat_reply",
+    mock_method.assert_awaited_once_with(
         messages=SAMPLE_MESSAGES,
         system_prompt=SYSTEM_PROMPT,
         max_tokens=MAX_TOKENS,
