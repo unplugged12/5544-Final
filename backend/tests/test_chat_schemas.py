@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from unittest.mock import patch
 
 
-_BASE = {"user_id": "u1", "channel_id": "c1", "guild_id": "g1"}
+_BASE = {"user_id": "12345", "channel_id": "67890", "guild_id": "11111"}
 
 
 def _make(**kwargs):

@@ -24,9 +24,9 @@ def _mock_response(
     reply_text: str = "gg, nice question",
     refusal: bool = False,
     provider_used: str = "mock",
-    guild_id: str = "g1",
-    channel_id: str = "c1",
-    user_id: str = "u1",
+    guild_id: str = "33333",
+    channel_id: str = "22222",
+    user_id: str = "11111",
 ) -> ChatResponse:
     return ChatResponse(
         reply_text=reply_text,
@@ -50,14 +50,14 @@ def test_chat_route_delegates_to_service(client):
     ) as mock_handle:
         resp = client.post(
             "/api/chat",
-            json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": "hello"},
+            json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": "hello"},
         )
 
     assert resp.status_code == 200
     mock_handle.assert_awaited_once_with(
-        user_id="u1",
-        channel_id="c1",
-        guild_id="g1",
+        user_id="11111",
+        channel_id="22222",
+        guild_id="33333",
         content="hello",
     )
 
@@ -72,7 +72,7 @@ def test_chat_route_returns_service_response(client):
     ):
         resp = client.post(
             "/api/chat",
-            json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": "hey"},
+            json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": "hey"},
         )
 
     data = resp.json()
@@ -95,7 +95,7 @@ def test_chat_route_refusal_forwarded(client):
     ):
         resp = client.post(
             "/api/chat",
-            json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": "kys"},
+            json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": "kys"},
         )
 
     data = resp.json()
@@ -114,11 +114,11 @@ def test_chat_route_session_id_deterministic(client):
     ):
         r1 = client.post(
             "/api/chat",
-            json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": "ping"},
+            json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": "ping"},
         )
         r2 = client.post(
             "/api/chat",
-            json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": "pong"},
+            json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": "pong"},
         )
 
     assert r1.json()["session_id"] == r2.json()["session_id"]
@@ -132,7 +132,7 @@ def test_chat_content_max_length_enforced(client):
     long_content = "x" * 1501
     resp = client.post(
         "/api/chat",
-        json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": long_content},
+        json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": long_content},
     )
     assert resp.status_code == 422
 
@@ -146,13 +146,13 @@ def test_chat_content_at_max_length_accepted(client):
     ):
         resp = client.post(
             "/api/chat",
-            json={"user_id": "u1", "channel_id": "c1", "guild_id": "g1", "content": boundary_content},
+            json={"user_id": "11111", "channel_id": "22222", "guild_id": "33333", "content": boundary_content},
         )
     assert resp.status_code == 200
 
 
 def test_chat_missing_field_returns_422(client):
-    resp = client.post("/api/chat", json={"user_id": "u1", "content": "hi"})
+    resp = client.post("/api/chat", json={"user_id": "11111", "content": "hi"})
     assert resp.status_code == 422
 
 

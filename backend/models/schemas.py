@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
@@ -135,6 +136,31 @@ class ChatRequest(BaseModel):
     channel_id: str
     guild_id: str
     content: str
+
+    @field_validator("user_id", "channel_id", "guild_id")
+    @classmethod
+    def _validate_snowflake(cls, v: str) -> str:
+        """Enforce Discord snowflake format: 1–20 decimal digits only.
+
+        Discord snowflakes are unsigned 64-bit integers (max 20 decimal digits).
+        Rejecting anything that is not purely numeric prevents:
+          - Delimiter injection via IDs containing ">>>" or "<<<" (which would
+            terminate the <<<USER_MESSAGE from={user_id} trust=untrusted>>> wrapper
+            constructed in chat_service.handle before the content even reaches
+            sanitize_input).
+          - Newline injection that could smuggle synthetic prompt lines into the
+            wrapper header.
+          - Any other unexpected characters that could confuse the LLM's parsing
+            of the wrapper metadata.
+
+        Defends against OWASP LLM01 (direct prompt injection via ID field).
+        See plan file §Guardrails, row LLM01.
+        """
+        if not re.fullmatch(r"\d{1,20}", v):
+            raise ValueError(
+                "must be a Discord snowflake (1–20 decimal digits)"
+            )
+        return v
 
     @field_validator("content")
     @classmethod
