@@ -56,6 +56,23 @@ _BLOCK_SEVERITIES: frozenset[str] = frozenset(
 # ---------------------------------------------------------------------------
 _TURN_COUNTER = 0
 
+# ---------------------------------------------------------------------------
+# PR 7 fix (P2): HMAC secret sentinel guard.
+# If CHAT_LOG_HMAC_SECRET is unconfigured (empty or still the sentinel), the
+# sentinel key is public in the repo — anyone who knows it can compute the same
+# hashes and reverse the pseudonymization guarantee. Instead: log user_id_hash
+# as None and emit one error per process lifetime so operators notice the
+# misconfiguration without crashing the chat flow.
+# ---------------------------------------------------------------------------
+_HMAC_SECRET_SENTINEL = "REPLACE_ME_WITH_SECRET"
+_hmac_warned = False
+
+
+def reset_hmac_warning_state() -> None:
+    """Reset the per-process HMAC warning guard. For tests only."""
+    global _hmac_warned
+    _hmac_warned = False
+
 
 def _make_session_id(guild_id: str, channel_id: str, user_id: str) -> str:
     """Return a 16-char hex session identifier for a (guild, channel, user) triple.
@@ -67,15 +84,33 @@ def _make_session_id(guild_id: str, channel_id: str, user_id: str) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
-def _hmac_user_id(user_id: str, secret: str) -> str:
-    """Return a 16-char HMAC-SHA256 hex digest of user_id.
+def _compute_user_id_hash(user_id: str) -> str | None:
+    """Return a 16-char HMAC-SHA256 hex digest of user_id, or None if unconfigured.
 
     guild_id and channel_id are not user-identifying snowflakes (they identify
     the server/channel, not the person), so they are logged as plaintext.
     user_id directly identifies the person and must be HMAC'd before logging.
     The 16-char truncation is sufficient for correlation while bounding entropy
     leakage.
+
+    If CHAT_LOG_HMAC_SECRET is unconfigured (empty string or sentinel), returns
+    None and emits a one-per-process-lifetime error log. This prevents the
+    sentinel key (public in the repo) from being used to produce deterministic
+    hashes that are reversible by anyone who knows the sentinel value.
+    Chat flow continues normally — only the log field is degraded to None.
     """
+    global _hmac_warned
+    from config import settings as _settings  # local import avoids circular at module load
+    secret = _settings.CHAT_LOG_HMAC_SECRET or ""
+    if not secret or secret == _HMAC_SECRET_SENTINEL:
+        if not _hmac_warned:
+            logger.error(
+                "CHAT_LOG_HMAC_SECRET is unconfigured (empty or sentinel). "
+                "Chat turn logs will record user_id_hash=None. "
+                "Pseudonymization is disabled."
+            )
+            _hmac_warned = True
+        return None
     return hmac.new(
         secret.encode(),
         user_id.encode(),
@@ -238,7 +273,7 @@ async def handle(
     log_record = {
         "event": "chat_turn",
         "session_id": session_id,
-        "user_id_hash": _hmac_user_id(user_id, settings.CHAT_LOG_HMAC_SECRET),
+        "user_id_hash": _compute_user_id_hash(user_id),
         "guild_id": guild_id,
         "channel_id": channel_id,
         "input_chars": len(safe_content),

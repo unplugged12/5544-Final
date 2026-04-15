@@ -402,3 +402,151 @@ async def test_token_counts_zero_when_usage_empty(fresh_db, caplog):
     log_dict = _capture_json_log(caplog)
     assert log_dict["input_tokens"] == 0
     assert log_dict["output_tokens"] == 0
+
+
+# ---------------------------------------------------------------------------
+# P2 fix tests: sentinel/empty CHAT_LOG_HMAC_SECRET → user_id_hash=None
+# ---------------------------------------------------------------------------
+
+@pytest.fixture()
+def reset_hmac_warning(monkeypatch):
+    """Reset the per-process _hmac_warned guard before each test that needs it.
+
+    Uses monkeypatch so the reset is automatically reverted after the test,
+    keeping test isolation. Exposed as a non-autouse fixture so only the P2
+    tests opt in — existing tests continue to run unaffected.
+    """
+    import services.chat_service as _cs
+    monkeypatch.setattr(_cs, "_hmac_warned", False)
+
+
+async def test_sentinel_secret_produces_none_hash(fresh_db, caplog, reset_hmac_warning):
+    """Sentinel CHAT_LOG_HMAC_SECRET → user_id_hash is None in the structured log."""
+    with caplog.at_level(logging.INFO, logger="services.chat_service"):
+        with (
+            patch("services.provider_service.call", new_callable=AsyncMock,
+                  return_value=_provider_response()),
+            patch("services.audit_service.log_interaction", new_callable=AsyncMock),
+            patch("config.settings.CHAT_LOG_HMAC_SECRET", "REPLACE_ME_WITH_SECRET"),
+        ):
+            from services import chat_service
+            await chat_service.handle(
+                user_id="12345", channel_id="1", guild_id="2", content="hi"
+            )
+
+    log_dict = _capture_json_log(caplog)
+    assert log_dict is not None
+    assert log_dict["user_id_hash"] is None, (
+        f"Expected user_id_hash=None with sentinel secret, got {log_dict['user_id_hash']!r}"
+    )
+
+
+async def test_sentinel_secret_emits_error_log(fresh_db, caplog, reset_hmac_warning):
+    """Sentinel CHAT_LOG_HMAC_SECRET → one log.error with expected substring."""
+    with caplog.at_level(logging.ERROR, logger="services.chat_service"):
+        with (
+            patch("services.provider_service.call", new_callable=AsyncMock,
+                  return_value=_provider_response()),
+            patch("services.audit_service.log_interaction", new_callable=AsyncMock),
+            patch("config.settings.CHAT_LOG_HMAC_SECRET", "REPLACE_ME_WITH_SECRET"),
+        ):
+            from services import chat_service
+            await chat_service.handle(
+                user_id="12345", channel_id="1", guild_id="2", content="hi"
+            )
+
+    error_records = [r for r in caplog.records if r.levelno == logging.ERROR]
+    assert len(error_records) >= 1, "Expected at least one ERROR log record"
+    assert any(
+        "CHAT_LOG_HMAC_SECRET is unconfigured" in r.getMessage()
+        for r in error_records
+    ), f"Expected 'CHAT_LOG_HMAC_SECRET is unconfigured' in error, got: {[r.getMessage() for r in error_records]}"
+
+
+async def test_sentinel_secret_error_emitted_exactly_once(fresh_db, caplog, reset_hmac_warning):
+    """Two consecutive handle() calls with sentinel → error emitted exactly once (not per turn)."""
+    with caplog.at_level(logging.ERROR, logger="services.chat_service"):
+        with (
+            patch("services.provider_service.call", new_callable=AsyncMock,
+                  return_value=_provider_response()),
+            patch("services.audit_service.log_interaction", new_callable=AsyncMock),
+            patch("config.settings.CHAT_LOG_HMAC_SECRET", "REPLACE_ME_WITH_SECRET"),
+        ):
+            from services import chat_service
+            await chat_service.handle(
+                user_id="111", channel_id="1", guild_id="2", content="hi"
+            )
+            await chat_service.handle(
+                user_id="222", channel_id="1", guild_id="2", content="hello"
+            )
+
+    error_count = sum(
+        1 for r in caplog.records
+        if r.levelno == logging.ERROR
+        and "CHAT_LOG_HMAC_SECRET is unconfigured" in r.getMessage()
+    )
+    assert error_count == 1, (
+        f"Expected exactly 1 HMAC error log per process lifetime, got {error_count}"
+    )
+
+
+async def test_empty_string_secret_produces_none_hash(fresh_db, caplog, reset_hmac_warning):
+    """Empty-string CHAT_LOG_HMAC_SECRET → same degraded behavior as sentinel (hash=None)."""
+    with caplog.at_level(logging.INFO, logger="services.chat_service"):
+        with (
+            patch("services.provider_service.call", new_callable=AsyncMock,
+                  return_value=_provider_response()),
+            patch("services.audit_service.log_interaction", new_callable=AsyncMock),
+            patch("config.settings.CHAT_LOG_HMAC_SECRET", ""),
+        ):
+            from services import chat_service
+            await chat_service.handle(
+                user_id="12345", channel_id="1", guild_id="2", content="hi"
+            )
+
+    log_dict = _capture_json_log(caplog)
+    assert log_dict is not None
+    assert log_dict["user_id_hash"] is None, (
+        f"Expected user_id_hash=None with empty secret, got {log_dict['user_id_hash']!r}"
+    )
+
+
+async def test_valid_secret_still_produces_16char_hash(fresh_db, caplog, reset_hmac_warning):
+    """Valid (non-sentinel, non-empty) CHAT_LOG_HMAC_SECRET → 16-char hex hash (regression guard)."""
+    with caplog.at_level(logging.INFO, logger="services.chat_service"):
+        with (
+            patch("services.provider_service.call", new_callable=AsyncMock,
+                  return_value=_provider_response()),
+            patch("services.audit_service.log_interaction", new_callable=AsyncMock),
+            patch("config.settings.CHAT_LOG_HMAC_SECRET", "a-real-configured-secret"),
+        ):
+            from services import chat_service
+            await chat_service.handle(
+                user_id="12345", channel_id="1", guild_id="2", content="hi"
+            )
+
+    log_dict = _capture_json_log(caplog)
+    assert log_dict is not None
+    assert log_dict["user_id_hash"] is not None
+    assert len(log_dict["user_id_hash"]) == 16
+    assert all(c in "0123456789abcdef" for c in log_dict["user_id_hash"]), (
+        f"user_id_hash is not lowercase hex: {log_dict['user_id_hash']!r}"
+    )
+
+
+async def test_chat_flow_returns_response_with_unconfigured_secret(fresh_db, reset_hmac_warning):
+    """Chat flow returns a valid ChatResponse even when HMAC secret is unconfigured (no raise)."""
+    with (
+        patch("services.provider_service.call", new_callable=AsyncMock,
+              return_value=_provider_response("gg nice")),
+        patch("services.audit_service.log_interaction", new_callable=AsyncMock),
+        patch("config.settings.CHAT_LOG_HMAC_SECRET", "REPLACE_ME_WITH_SECRET"),
+    ):
+        from services import chat_service
+        result = await chat_service.handle(
+            user_id="12345", channel_id="1", guild_id="2", content="hi"
+        )
+
+    assert isinstance(result, ChatResponse)
+    assert result.reply_text == "gg nice"
+    # Chat flow must never raise due to unconfigured HMAC — only the log field degrades
