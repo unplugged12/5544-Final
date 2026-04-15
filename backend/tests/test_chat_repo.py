@@ -1,7 +1,5 @@
 """Tests for repositories.chat_repo — insert, load, and TTL cleanup."""
 
-from unittest.mock import patch
-
 import aiosqlite
 import pytest
 
