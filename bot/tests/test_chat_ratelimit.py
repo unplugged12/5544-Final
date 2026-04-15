@@ -1,4 +1,11 @@
-"""Tests for the sliding-window chat rate limiter."""
+"""Tests for the sliding-window chat rate limiter.
+
+PR 7 additions:
+  - Injection-marker auto-timeout: > 5 hits in 10 min → 1h ban
+  - Eviction of stale markers from the injection window
+  - Timeout check runs first in allow() (before user/guild windows)
+  - After timeout expires, allow() returns True again
+"""
 
 from __future__ import annotations
 
@@ -140,3 +147,113 @@ class TestClockControl:
             assert limiter.allow(user_id="u1", guild_id="g1") is True
             # Now at limit again (t=30 entry + 2 new = 3)
             assert limiter.allow(user_id="u1", guild_id="g1") is False
+
+
+# ── injection-marker auto-timeout (PR 7) ──────────────────────────────────────
+
+def _make_injection_limiter(
+    *,
+    threshold: int = 5,
+    window_sec: int = 600,
+    timeout_sec: int = 3600,
+) -> ChatRateLimiter:
+    """Return a limiter with high per-user/guild limits so injection tests are isolated."""
+    return ChatRateLimiter(
+        user_per_min=1000,
+        guild_per_min=1000,
+        injection_marker_threshold=threshold,
+        injection_marker_window_sec=window_sec,
+        timeout_duration_sec=timeout_sec,
+    )
+
+
+class TestInjectionMarkerAutoTimeout:
+    def test_exactly_threshold_hits_no_timeout(self) -> None:
+        """Exactly threshold (5) hits in window → no timeout (boundary: > not >=)."""
+        limiter = _make_injection_limiter(threshold=5)
+        for _ in range(5):
+            limiter.record_injection_marker(user_id="u1")
+        # 5 hits, threshold is 5 — not exceeded (> 5 required)
+        assert limiter.allow(user_id="u1", guild_id="g1") is True
+
+    def test_one_over_threshold_triggers_timeout(self) -> None:
+        """6 hits with threshold=5 → timeout activated."""
+        limiter = _make_injection_limiter(threshold=5)
+        for _ in range(6):
+            limiter.record_injection_marker(user_id="u1")
+        # User is now timed out
+        assert limiter.allow(user_id="u1", guild_id="g1") is False
+
+    def test_timeout_blocks_even_when_rate_windows_clear(self) -> None:
+        """During timeout, allow() returns False even if per-user/guild windows are empty."""
+        limiter = _make_injection_limiter(threshold=5, timeout_sec=3600)
+        for _ in range(6):
+            limiter.record_injection_marker(user_id="u1")
+        # The user's rate windows are untouched (no calls to allow() yet),
+        # but the injection timeout should still block.
+        assert limiter.allow(user_id="u1", guild_id="g1") is False
+
+    def test_timeout_expires_and_allow_resumes(self) -> None:
+        """After timeout_sec elapses, allow() returns True again."""
+        base = 5000.0
+        limiter = _make_injection_limiter(threshold=5, timeout_sec=3600)
+
+        with patch("chat_ratelimit.time") as mock_time:
+            mock_time.monotonic.return_value = base
+            for _ in range(6):
+                limiter.record_injection_marker(user_id="u1")
+
+            # Still in timeout
+            assert limiter.allow(user_id="u1", guild_id="g1") is False
+
+            # Advance past the 1h timeout
+            mock_time.monotonic.return_value = base + 3601.0
+            assert limiter.allow(user_id="u1", guild_id="g1") is True
+
+    def test_stale_markers_evicted_from_injection_window(self) -> None:
+        """Injection markers older than window_sec are evicted on the next record call."""
+        base = 8000.0
+        limiter = _make_injection_limiter(threshold=5, window_sec=600, timeout_sec=3600)
+
+        with patch("chat_ratelimit.time") as mock_time:
+            # Record 4 hits at t=0 (below threshold)
+            mock_time.monotonic.return_value = base
+            for _ in range(4):
+                limiter.record_injection_marker(user_id="u1")
+
+            # Advance 601s — all 4 entries expire from the window
+            mock_time.monotonic.return_value = base + 601.0
+            # Record 5 more — only these 5 are in the window (4 evicted)
+            for _ in range(5):
+                limiter.record_injection_marker(user_id="u1")
+
+            # 5 hits == threshold, not exceeded → no timeout
+            assert limiter.allow(user_id="u1", guild_id="g1") is True
+
+    def test_other_user_not_affected_by_timeout(self) -> None:
+        """Timed-out user does not affect a different user."""
+        limiter = _make_injection_limiter(threshold=5)
+        for _ in range(6):
+            limiter.record_injection_marker(user_id="u1")
+
+        # u1 is timed out; u2 should still pass
+        assert limiter.allow(user_id="u1", guild_id="g1") is False
+        assert limiter.allow(user_id="u2", guild_id="g1") is True
+
+    def test_timeout_check_runs_before_rate_windows(self) -> None:
+        """Timed-out user is rejected before the per-user window is checked/incremented."""
+        limiter = _make_injection_limiter(threshold=5, timeout_sec=3600)
+        # Exhaust the per-user window for u2 so it's full
+        limiter2 = _make_injection_limiter(threshold=5)
+
+        # Record timeout for u1
+        for _ in range(6):
+            limiter.record_injection_marker(user_id="u1")
+
+        # allow() should return False without incrementing any window
+        before_guild_len = len(limiter._guild_window["g1"])
+        result = limiter.allow(user_id="u1", guild_id="g1")
+
+        assert result is False
+        # Guild window must not have been incremented (timeout check ran first)
+        assert len(limiter._guild_window["g1"]) == before_guild_len

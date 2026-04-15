@@ -137,6 +137,11 @@ class ChatCog(commands.Cog):
             log.exception("chat backend call failed: %s", exc)
             return  # fail silent — no error reply (also spammable)
 
+        # PR 7: if the backend flagged an injection marker, record it in the
+        # rate limiter for auto-timeout tracking (> 5 hits in 10 min → 1h ban).
+        if response.get("injection_marker_seen", False):
+            self.ratelimit.record_injection_marker(user_id=str(message.author.id))
+
         # Reply with constrained AllowedMentions (no mass-mention abuse)
         await self._safe_reply(
             message,
