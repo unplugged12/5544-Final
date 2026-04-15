@@ -147,3 +147,32 @@ class OpenAIProvider(BaseLLMProvider):
                 "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
             },
         )
+
+    # ------------------------------------------------------------------
+    async def generate_chat_reply(
+        self,
+        messages: list[dict],  # [{role: "user"|"assistant", content: str}]
+        system_prompt: str,
+        max_tokens: int,
+    ) -> ProviderResponse:
+        full_messages = [
+            {"role": "system", "content": system_prompt},
+            *messages,
+        ]
+
+        resp = await self._client.chat.completions.create(
+            model=self._model,
+            messages=full_messages,
+            max_tokens=max_tokens,
+            temperature=0.5,
+        )
+
+        return ProviderResponse(
+            text=resp.choices[0].message.content or "",
+            provider_name="openai",
+            model=self._model,
+            usage={
+                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
+                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
+            },
+        )

@@ -144,3 +144,29 @@ class AnthropicProvider(BaseLLMProvider):
                 "output_tokens": resp.usage.output_tokens,
             },
         )
+
+    # ------------------------------------------------------------------
+    async def generate_chat_reply(
+        self,
+        messages: list[dict],  # [{role: "user"|"assistant", content: str}]
+        system_prompt: str,
+        max_tokens: int,
+    ) -> ProviderResponse:
+        # Anthropic takes system= as a top-level param, NOT inside messages.
+        resp = await self._client.messages.create(
+            model=self._model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=messages,
+            temperature=0.5,
+        )
+
+        return ProviderResponse(
+            text=resp.content[0].text,
+            provider_name="anthropic",
+            model=self._model,
+            usage={
+                "input_tokens": resp.usage.input_tokens,
+                "output_tokens": resp.usage.output_tokens,
+            },
+        )

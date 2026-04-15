@@ -51,3 +51,12 @@ class BaseLLMProvider(ABC):
         system_prompt: str,
     ) -> ProviderResponse:
         ...
+
+    @abstractmethod
+    async def generate_chat_reply(
+        self,
+        messages: list[dict],  # [{role: "user"|"assistant", content: str}]
+        system_prompt: str,
+        max_tokens: int,
+    ) -> ProviderResponse:
+        ...
