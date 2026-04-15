@@ -38,9 +38,9 @@ The feature was designed against OWASP LLM Top 10 2025 (LLM01 Prompt Injection, 
 - **Mention scope**: every reply uses `discord.AllowedMentions(users=[author], everyone=False, roles=False)`.
 - **Adversarial CI**: 15-case mocked test suite in `backend/tests/test_chat_adversarial.py`.
 
-### Required env vars
+### Required env vars (chat feature)
 
-Three vars **must** be set to real values before running (see `.env.example` for full comments):
+These are **in addition to** the base vars from the Quick Start (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `SANDBOX_CHANNEL_ID`) — the chat feature does not run without all of them. Three vars specific to chat **must** be set to real values before running (see `.env.example` for full comments):
 
 | Variable | Purpose |
 |---|---|
