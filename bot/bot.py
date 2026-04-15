@@ -18,6 +18,7 @@ COG_EXTENSIONS: list[str] = [
     "cogs.moddraft",
     "cogs.settings",
     "cogs.monitor",
+    "cogs.chat",
 ]
 
 
