@@ -71,7 +71,9 @@ Optional tuning knobs (all have sensible defaults): `CHAT_MODEL_MAX_TOKENS`, `CH
 |---|---|
 | Per turn (gpt-4o-mini) | ~$0.00024 |
 | 100 DAU × 20 turns/day | ~$0.48/day |
-| Hard daily cap | `CHAT_DAILY_TOKEN_BUDGET=200000` tokens |
+| Configured budget ceiling | `CHAT_DAILY_TOKEN_BUDGET=200000` tokens (see note below) |
+
+> **Note**: `CHAT_DAILY_TOKEN_BUDGET` is a documented ceiling, **not a runtime-enforced hard cap** — the chat request path does not currently block turns when the budget is exceeded. Treat the value as an upper-bound target and monitor real usage via `GET /api/metrics/chat`. Runtime enforcement is tracked as a follow-up.
 
 ## Primary Stack
 - React + Vite frontend
