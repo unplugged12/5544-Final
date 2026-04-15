@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from database import init_db
 from routes import announcements, chat as chat_routes, faq, health, history, moderation
+from routes import metrics as metrics_routes
 from routes import settings as settings_routes
 from routes import sources
 from services import retrieval_service
@@ -64,3 +65,4 @@ app.include_router(moderation.router, prefix="/api/moderation")
 app.include_router(settings_routes.router, prefix="/api/settings")
 app.include_router(history.router, prefix="/api/history")
 app.include_router(chat_routes.router, prefix="/api")
+app.include_router(metrics_routes.router)  # prefix already set to /api/metrics in the module

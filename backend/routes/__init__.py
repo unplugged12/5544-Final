@@ -1,6 +1,6 @@
 """HTTP route modules."""
 
-from routes import announcements, chat, faq, health, history, moderation, settings, sources
+from routes import announcements, chat, faq, health, history, metrics, moderation, settings, sources
 
 __all__ = [
     "announcements",
@@ -8,6 +8,7 @@ __all__ = [
     "faq",
     "health",
     "history",
+    "metrics",
     "moderation",
     "settings",
     "sources",
