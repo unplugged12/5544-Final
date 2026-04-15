@@ -66,7 +66,13 @@ async def insert_turn(
 
 
 async def load_session(session_id: str, max_turns: int = 6) -> list[dict]:
-    """Return up to *max_turns* non-expired turns for *session_id*, oldest first."""
+    """Return up to *max_turns* non-expired turns for *session_id*, oldest first.
+
+    Queries newest-first so the LIMIT keeps the most-recent turns, then
+    reverses the result to restore chronological (oldest→newest) order.
+    This ensures that when a session exceeds *max_turns*, the oldest turns
+    are dropped rather than the newest.
+    """
     async with aiosqlite.connect(settings.SQLITE_PATH) as db:
         db.row_factory = aiosqlite.Row
         await db.execute("PRAGMA journal_mode=WAL")
@@ -75,11 +81,13 @@ async def load_session(session_id: str, max_turns: int = 6) -> list[dict]:
             SELECT role, content, created_at
             FROM chat_turns
             WHERE session_id = ? AND expires_at > datetime('now')
-            ORDER BY created_at ASC
+            ORDER BY created_at DESC
             LIMIT ?
             """,
             (session_id, max_turns),
         )
         rows = await cursor.fetchall()
 
-    return [dict(r) for r in rows]
+    result = [dict(r) for r in rows]
+    result.reverse()
+    return result

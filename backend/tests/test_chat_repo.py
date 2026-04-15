@@ -85,6 +85,50 @@ async def test_load_session_empty_for_unknown_session(fresh_db):
     assert rows == []
 
 
+async def test_load_session_keeps_newest_turns(fresh_db, db_path):
+    """When a session has more turns than max_turns, the NEWEST are kept.
+
+    Inserts 10 turns (content "turn-0" through "turn-9") with 1-second gaps
+    baked in via direct DB UPDATE so created_at ordering is deterministic,
+    then asserts that load_session(..., max_turns=6) returns turns 4-9 in
+    chronological order (turn-4 first, turn-9 last).
+    """
+    # Insert 10 turns; all land with the same created_at at SQLite resolution,
+    # so we back-date them explicitly to spread them one second apart.
+    turn_ids = []
+    for i in range(10):
+        tid = await _insert(content=f"turn-{i}", ttl=60)
+        turn_ids.append(tid)
+
+    # Spread created_at: turn-0 is oldest, turn-9 is newest.
+    async with aiosqlite.connect(db_path) as db:
+        for i, tid in enumerate(turn_ids):
+            offset = i - 9  # turn-9 → 0 sec ago, turn-0 → -9 sec ago
+            await db.execute(
+                "UPDATE chat_turns SET created_at = datetime('now', ? || ' seconds') "
+                "WHERE turn_id = ?",
+                (str(offset), tid),
+            )
+        await db.commit()
+
+    rows = await chat_repo.load_session(_SESSION, max_turns=6)
+
+    # (a) exactly 6 rows returned
+    assert len(rows) == 6, f"Expected 6 rows, got {len(rows)}"
+
+    contents = [r["content"] for r in rows]
+
+    # (b) must be the 6 most-recent (turn-4 through turn-9)
+    assert set(contents) == {f"turn-{i}" for i in range(4, 10)}, (
+        f"Expected turn-4..turn-9, got {contents}"
+    )
+
+    # (c) must be in chronological order (oldest first)
+    assert contents == [f"turn-{i}" for i in range(4, 10)], (
+        f"Expected chronological order, got {contents}"
+    )
+
+
 async def test_ttl_cleanup_removes_expired(fresh_db, db_path):
     """Expired turns are deleted when a new turn is inserted."""
     # Insert a turn that expires immediately (ttl=0 gives expires_at == now)
