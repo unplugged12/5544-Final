@@ -59,3 +59,27 @@ class BackendClient:
     async def set_demo_mode(self, enabled: bool) -> dict:
         """Toggle demo mode on or off."""
         return await self._post("/api/settings/demo-mode", {"enabled": enabled})
+
+    async def chat(
+        self,
+        *,
+        user_id: str,
+        channel_id: str,
+        guild_id: str,
+        content: str,
+    ) -> dict:
+        """POST /api/chat — returns {reply_text, session_id, refusal, provider_used}."""
+        return await self._post(
+            "/api/chat",
+            {
+                "user_id": user_id,
+                "channel_id": channel_id,
+                "guild_id": guild_id,
+                "content": content,
+            },
+        )
+
+    async def get_chat_enabled(self) -> bool:
+        """GET /api/settings/chat-enabled — return the chat-enabled DB flag."""
+        data = await self._get("/api/settings/chat-enabled")
+        return data.get("chat_enabled", True)
