@@ -221,23 +221,36 @@ async def test_provider_service_dispatches_generate_chat_reply():
 # ---------------------------------------------------------------------------
 
 def test_provider_service_imports_after_abstract_method_added():
-    """provider_service can be imported without TypeError.
+    """Regression guard: each concrete provider must OVERRIDE all abstract methods.
 
-    This test fails loudly if either OpenAIProvider or AnthropicProvider is
-    missing generate_chat_reply (ABC would raise TypeError at instantiation
-    inside _PROVIDERS dict, killing every import of provider_service).
+    Catches gotcha #3: someone adds @abstractmethod to BaseLLMProvider and
+    forgets to implement it in a concrete provider class.  Python's ABC
+    machinery raises TypeError when you instantiate a class that inherits but
+    does not override an abstract method — exactly what building _PROVIDERS = {}
+    does on module import.
 
-    Uses inspect rather than dynamic re-import to avoid polluting sys.modules
-    and breaking TestClient fixtures in sibling tests.
+    The prior implementation used inspect.getmembers() which returns INHERITED
+    methods, so it could not catch the missing-override case: if OpenAIProvider
+    inherited generate_chat_reply from BaseLLMProvider without defining its own
+    body, getmembers() would still find it and the assertion would pass — even
+    though _PROVIDERS construction would raise TypeError in production.
+
+    This version calls each provider's constructor directly.  If generate_chat_reply
+    (or any other abstract method) is not overridden, Python raises TypeError before
+    __init__ returns, and pytest.fail() surfaces the exact set of missing methods.
+    Mental simulation: delete the generate_chat_reply body from openai_provider.py
+    so it inherits the abstract stub — OpenAIProvider() raises TypeError here, test
+    fails loudly.  That is the correct behaviour.
     """
-    import inspect
-
     from providers.openai_provider import OpenAIProvider
     from providers.anthropic_provider import AnthropicProvider
 
-    for provider_cls in (OpenAIProvider, AnthropicProvider):
-        members = dict(inspect.getmembers(provider_cls, predicate=inspect.isfunction))
-        assert "generate_chat_reply" in members, (
-            f"{provider_cls.__name__} is missing generate_chat_reply — "
-            "provider_service._PROVIDERS would raise TypeError on import"
-        )
+    for ProviderCls in (OpenAIProvider, AnthropicProvider):
+        try:
+            ProviderCls()
+        except TypeError as exc:
+            pytest.fail(
+                f"{ProviderCls.__name__} is missing abstract method implementations: "
+                f"{getattr(ProviderCls, '__abstractmethods__', 'unknown')}. "
+                f"Original error: {exc}"
+            )
