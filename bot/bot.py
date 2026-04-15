@@ -19,6 +19,7 @@ COG_EXTENSIONS: list[str] = [
     "cogs.settings",
     "cogs.monitor",
     "cogs.chat",
+    "cogs.admin",  # PR 7: /toggle-chat admin slash command
 ]
 
 
