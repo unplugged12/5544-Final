@@ -67,12 +67,35 @@ class ChatCog(commands.Cog):
 
         # Trigger gate: @mention OR reply-to-bot
         triggered_by_mention = self.bot.user in message.mentions
-        triggered_by_reply = (
-            message.reference is not None
-            and message.reference.resolved is not None
-            and isinstance(message.reference.resolved, discord.Message)
-            and message.reference.resolved.author.id == self.bot.user.id
-        )
+        triggered_by_reply = False
+
+        # Only check the reply path (potentially expensive) when mention didn't
+        # already trigger — avoids an HTTP call on every @-mention path.
+        if not triggered_by_mention and message.reference is not None:
+            resolved = message.reference.resolved
+            if isinstance(resolved, discord.Message):
+                triggered_by_reply = resolved.author.id == self.bot.user.id
+            elif resolved is None and message.reference.message_id is not None:
+                # Cache miss (e.g. bot restart, deep history) — fetch to determine
+                # the referenced message's author.  Fail closed on any error so a
+                # transient Discord fault can't accidentally trigger chat.
+                try:
+                    referenced = await message.channel.fetch_message(
+                        message.reference.message_id
+                    )
+                    triggered_by_reply = referenced.author.id == self.bot.user.id
+                except (discord.NotFound, discord.Forbidden):
+                    pass  # message inaccessible — treat as no trigger
+                except discord.HTTPException as exc:
+                    log.warning(
+                        "failed to fetch reply reference %s in channel %s: %s",
+                        message.reference.message_id,
+                        message.channel.id,
+                        exc,
+                    )
+            # discord.DeletedReferencedMessage and any other resolved type:
+            # leave triggered_by_reply=False
+
         if not (triggered_by_mention or triggered_by_reply):
             return
 

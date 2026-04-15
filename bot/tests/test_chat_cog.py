@@ -6,6 +6,7 @@ import sys
 import os
 import time
 import asyncio
+import logging
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch, call
 
@@ -457,3 +458,212 @@ class TestAllowedMentions:
         assert am.roles is False
         assert am.replied_user is True
         assert author in am.users
+
+
+# ── cache-miss reply-reference tests (Codex P2 fix) ──────────────────────────
+
+def _make_reference(
+    *,
+    resolved=MagicMock(),  # set to None or a specific object per test
+    message_id: int | None = 555_555_555,
+) -> MagicMock:
+    """Build a discord.MessageReference mock with controllable resolved state."""
+    ref = MagicMock(spec=discord.MessageReference)
+    ref.resolved = resolved
+    ref.message_id = message_id
+    return ref
+
+
+def _make_fetched_message(*, author_id: int) -> MagicMock:
+    """Simulate a Message returned by channel.fetch_message()."""
+    fetched = MagicMock(spec=discord.Message)
+    fetched.author = MagicMock()
+    fetched.author.id = author_id
+    return fetched
+
+
+class TestCacheMissReplyReference:
+    """
+    Cover the three resolved states: Message (hydrated), None (cache miss),
+    DeletedReferencedMessage (deleted), plus the guard that skip the fetch
+    when a mention already triggered.
+    """
+
+    @pytest.mark.asyncio
+    async def test_cache_miss_bot_author_triggers(self) -> None:
+        """resolved=None + fetch returns bot message → chat triggered."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        fetched = _make_fetched_message(author_id=BOT_USER_ID)
+        mock_channel.fetch_message = AsyncMock(return_value=fetched)
+
+        ref = _make_reference(resolved=None, message_id=555)
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        await _run_on_message(cog, msg, mock_client=mock_client)
+
+        mock_channel.fetch_message.assert_awaited_once_with(555)
+        mock_client.chat.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_cache_miss_non_bot_author_no_trigger(self) -> None:
+        """resolved=None + fetch returns non-bot message → chat NOT triggered."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        fetched = _make_fetched_message(author_id=777_777_777)  # some other user
+        mock_channel.fetch_message = AsyncMock(return_value=fetched)
+
+        ref = _make_reference(resolved=None, message_id=555)
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        await _run_on_message(cog, msg, mock_client=mock_client)
+
+        mock_channel.fetch_message.assert_awaited_once_with(555)
+        mock_client.chat.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_cache_miss_not_found_silent(self) -> None:
+        """resolved=None, fetch raises NotFound → no trigger, no exception, no warning."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        mock_channel.fetch_message = AsyncMock(
+            side_effect=discord.NotFound(MagicMock(), "Unknown Message")
+        )
+
+        ref = _make_reference(resolved=None, message_id=555)
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        with patch("cogs.chat.log") as mock_log:
+            await _run_on_message(cog, msg, mock_client=mock_client)
+            mock_log.warning.assert_not_called()
+
+        mock_client.chat.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_cache_miss_forbidden_silent(self) -> None:
+        """resolved=None, fetch raises Forbidden → no trigger, no exception, no warning."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        mock_channel.fetch_message = AsyncMock(
+            side_effect=discord.Forbidden(MagicMock(), "Missing Access")
+        )
+
+        ref = _make_reference(resolved=None, message_id=555)
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        with patch("cogs.chat.log") as mock_log:
+            await _run_on_message(cog, msg, mock_client=mock_client)
+            mock_log.warning.assert_not_called()
+
+        mock_client.chat.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_cache_miss_http_exception_logs_warning(self) -> None:
+        """resolved=None, fetch raises HTTPException → no trigger, warning IS logged."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        # discord.HTTPException requires (response, message) positional args
+        http_response = MagicMock()
+        http_response.status = 500
+        http_response.reason = "Internal Server Error"
+        mock_channel.fetch_message = AsyncMock(
+            side_effect=discord.HTTPException(http_response, "server error")
+        )
+
+        ref = _make_reference(resolved=None, message_id=555)
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        with patch("cogs.chat.log") as mock_log:
+            await _run_on_message(cog, msg, mock_client=mock_client)
+            mock_log.warning.assert_called_once()
+
+        mock_client.chat.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_deleted_referenced_message_no_fetch(self) -> None:
+        """resolved is DeletedReferencedMessage → no fetch attempted, no trigger."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        mock_channel.fetch_message = AsyncMock()  # should never be called
+
+        # discord.DeletedReferencedMessage is not a discord.Message subclass
+        deleted = MagicMock(spec=discord.DeletedReferencedMessage)
+        ref = _make_reference(resolved=deleted, message_id=555)
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        await _run_on_message(cog, msg, mock_client=mock_client)
+
+        mock_channel.fetch_message.assert_not_awaited()
+        mock_client.chat.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_mention_trigger_skips_fetch(self) -> None:
+        """Mention already triggered → fetch_message must NOT be called even if resolved=None."""
+        bot, cog, mock_client = _make_bot()
+        bot_user = bot.user
+
+        mock_channel = _make_channel()
+        mock_channel.fetch_message = AsyncMock()  # must not be awaited
+
+        ref = _make_reference(resolved=None, message_id=555)
+        msg = _make_message(
+            content=f"<@{BOT_USER_ID}> hey",
+            mentions=[bot_user],
+            reference=ref,
+        )
+        msg.channel = mock_channel
+
+        await _run_on_message(cog, msg, mock_client=mock_client)
+
+        mock_channel.fetch_message.assert_not_awaited()
+        mock_client.chat.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_no_reference_no_fetch(self) -> None:
+        """message.reference=None, no mention → no fetch, no trigger (regression guard)."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        mock_channel.fetch_message = AsyncMock()
+
+        msg = _make_message(content="just chatting", mentions=[], reference=None)
+        msg.channel = mock_channel
+
+        await _run_on_message(cog, msg, mock_client=mock_client)
+
+        mock_channel.fetch_message.assert_not_awaited()
+        mock_client.chat.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_existing_resolved_message_no_fetch(self) -> None:
+        """Happy path preserved: resolved is a Message, no fetch call needed."""
+        bot, cog, mock_client = _make_bot()
+
+        mock_channel = _make_channel()
+        mock_channel.fetch_message = AsyncMock()  # must not be awaited
+
+        # resolved is a proper Message authored by the bot
+        bot_msg = MagicMock(spec=discord.Message)
+        bot_msg.author = MagicMock()
+        bot_msg.author.id = BOT_USER_ID
+        ref = _make_reference(resolved=bot_msg, message_id=555)
+
+        msg = _make_message(content="cool reply", mentions=[], reference=ref)
+        msg.channel = mock_channel
+
+        await _run_on_message(cog, msg, mock_client=mock_client)
+
+        mock_channel.fetch_message.assert_not_awaited()
+        mock_client.chat.assert_called_once()
