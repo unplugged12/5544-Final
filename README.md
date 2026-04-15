@@ -73,7 +73,7 @@ Optional tuning knobs (all have sensible defaults): `CHAT_MODEL_MAX_TOKENS`, `CH
 | 100 DAU × 20 turns/day | ~$0.48/day |
 | Configured budget ceiling | `CHAT_DAILY_TOKEN_BUDGET=200000` tokens (see note below) |
 
-> **Note**: `CHAT_DAILY_TOKEN_BUDGET` is a documented ceiling, **not a runtime-enforced hard cap** — the chat request path does not currently block turns when the budget is exceeded. Treat the value as an upper-bound target and monitor real usage via `GET /api/metrics/chat`. Runtime enforcement is tracked as a follow-up.
+> **Note**: `CHAT_DAILY_TOKEN_BUDGET` is a documented ceiling, **not a runtime-enforced hard cap** — the chat request path does not currently block turns when the budget is exceeded. Treat the value as an upper-bound target and monitor real usage via `GET /api/metrics/chat`. Runtime enforcement is tracked in [#35](https://github.com/unplugged12/5544-Final/issues/35).
 
 ## Primary Stack
 - React + Vite frontend
