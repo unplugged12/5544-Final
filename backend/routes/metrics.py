@@ -34,11 +34,17 @@ def _verify_admin_token(authorization: str | None) -> None:
     """Validate the Bearer token in the Authorization header.
 
     Raises:
-        HTTPException 503: Admin token is still the sentinel default — server
-            is misconfigured and must not serve admin data.
+        HTTPException 503: Admin token is unconfigured — either still the
+            sentinel default or set to an empty string. Both are treated as
+            "not configured" so that operators get a clear error rather than
+            accidentally having auth bypassed (compare_digest("","") == True).
         HTTPException 401: Token is missing or does not match.
     """
-    if settings.CHAT_ADMIN_TOKEN == _ADMIN_TOKEN_SENTINEL:
+    configured = settings.CHAT_ADMIN_TOKEN or ""
+    if not configured or configured == _ADMIN_TOKEN_SENTINEL:
+        # Fail closed: empty string and sentinel are both misconfiguration signals.
+        # Treating "" as misconfigured prevents compare_digest("", "") == True
+        # from silently granting access when the env var is unset/empty.
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Admin endpoint not configured — set CHAT_ADMIN_TOKEN in the environment.",
@@ -50,8 +56,17 @@ def _verify_admin_token(authorization: str | None) -> None:
             detail="Authorization header with Bearer token required.",
         )
 
-    provided_token = authorization[len("Bearer "):]
-    if not secrets.compare_digest(provided_token, settings.CHAT_ADMIN_TOKEN):
+    provided_token = authorization[len("Bearer "):].strip()
+    if not provided_token:
+        # Reject empty Bearer value before compare_digest so we never call
+        # compare_digest("", configured) — which would incorrectly time-equalise
+        # an empty string against a non-empty secret.
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Bearer token value is empty.",
+        )
+
+    if not secrets.compare_digest(provided_token, configured):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid admin token.",

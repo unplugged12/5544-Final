@@ -186,3 +186,69 @@ async def test_refusal_count_correct(db_path, seeded_client):
     body = resp.json()
     assert body["totals"]["refusals"] == 2
     assert body["totals"]["turns"] == 3
+
+
+# ---------------------------------------------------------------------------
+# P1 fix tests: empty/sentinel CHAT_ADMIN_TOKEN + empty bearer edge cases
+# ---------------------------------------------------------------------------
+
+def test_empty_string_token_returns_503_with_empty_bearer(seeded_client):
+    """Empty CHAT_ADMIN_TOKEN + empty bearer → 503 (misconfigured server, not auth failure)."""
+    with patch("config.settings.CHAT_ADMIN_TOKEN", ""):
+        resp = seeded_client.get("/api/metrics/chat", headers={"Authorization": "Bearer "})
+    assert resp.status_code == 503
+
+
+def test_empty_string_token_returns_503_with_any_bearer(seeded_client):
+    """Empty CHAT_ADMIN_TOKEN + any non-empty bearer → 503 (misconfigured, not 401).
+
+    Without the empty-string guard, compare_digest("", "") == True would grant
+    access when both configured and provided are empty. The guard ensures callers
+    always see 503, making misconfiguration obvious rather than silently open.
+    """
+    with patch("config.settings.CHAT_ADMIN_TOKEN", ""):
+        resp = seeded_client.get("/api/metrics/chat", headers=_auth("some-token"))
+    assert resp.status_code == 503
+
+
+def test_valid_token_empty_bearer_returns_401(seeded_client):
+    """Valid CHAT_ADMIN_TOKEN + Authorization: Bearer <nothing> → 401.
+
+    Server IS configured; the caller just sent an empty token value.
+    Must be 401, not 503.
+    """
+    with patch("config.settings.CHAT_ADMIN_TOKEN", _GOOD_TOKEN):
+        resp = seeded_client.get("/api/metrics/chat", headers={"Authorization": "Bearer "})
+    assert resp.status_code == 401
+
+
+def test_valid_token_no_auth_header_returns_401(seeded_client):
+    """Valid CHAT_ADMIN_TOKEN + missing Authorization header entirely → 401."""
+    with patch("config.settings.CHAT_ADMIN_TOKEN", _GOOD_TOKEN):
+        resp = seeded_client.get("/api/metrics/chat")
+    assert resp.status_code == 401
+
+
+def test_valid_token_bearer_whitespace_only_returns_401(seeded_client):
+    """Valid CHAT_ADMIN_TOKEN + Authorization: Bearer    (spaces only) → 401."""
+    with patch("config.settings.CHAT_ADMIN_TOKEN", _GOOD_TOKEN):
+        resp = seeded_client.get(
+            "/api/metrics/chat", headers={"Authorization": "Bearer    "}
+        )
+    assert resp.status_code == 401
+
+
+def test_valid_token_wrong_nonempty_bearer_returns_401(seeded_client):
+    """Valid CHAT_ADMIN_TOKEN + wrong non-empty bearer → 401."""
+    with patch("config.settings.CHAT_ADMIN_TOKEN", _GOOD_TOKEN):
+        resp = seeded_client.get("/api/metrics/chat", headers=_auth("definitely-wrong"))
+    assert resp.status_code == 401
+
+
+def test_sentinel_with_empty_bearer_returns_503(seeded_client):
+    """Sentinel CHAT_ADMIN_TOKEN + empty bearer → 503 (misconfigured takes priority over empty bearer)."""
+    with patch("config.settings.CHAT_ADMIN_TOKEN", "REPLACE_ME_WITH_ADMIN_TOKEN"):
+        resp = seeded_client.get(
+            "/api/metrics/chat", headers={"Authorization": "Bearer "}
+        )
+    assert resp.status_code == 503
