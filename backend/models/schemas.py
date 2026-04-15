@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from models.enums import (
     EventSource,
@@ -134,7 +134,20 @@ class ChatRequest(BaseModel):
     user_id: str
     channel_id: str
     guild_id: str
-    content: str = Field(max_length=1500)
+    content: str
+
+    @field_validator("content")
+    @classmethod
+    def content_within_max_chars(cls, v: str) -> str:
+        # Lazy import avoids potential circular dependency at module load time.
+        from config import settings  # noqa: PLC0415
+
+        limit = settings.CHAT_INPUT_MAX_CHARS
+        if len(v) > limit:
+            raise ValueError(
+                f"content exceeds CHAT_INPUT_MAX_CHARS limit of {limit} characters"
+            )
+        return v
 
 
 class ChatResponse(BaseModel):
