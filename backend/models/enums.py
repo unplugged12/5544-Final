@@ -15,6 +15,7 @@ class TaskType(str, Enum):
     SUMMARY = "summary"
     MOD_DRAFT = "mod_draft"
     MODERATION = "moderation"
+    CHAT = "chat"
 
 
 class Severity(str, Enum):

@@ -124,3 +124,29 @@ class DemoModeResponse(BaseModel):
 class HistoryResponse(BaseModel):
     events: list[ModerationEventResponse]
     total: int
+
+
+# ---------------------------------------------------------------------------
+# Chat
+# ---------------------------------------------------------------------------
+
+class ChatRequest(BaseModel):
+    user_id: str
+    channel_id: str
+    guild_id: str
+    content: str = Field(max_length=1500)
+
+
+class ChatResponse(BaseModel):
+    reply_text: str
+    session_id: str
+    refusal: bool
+    provider_used: str
+
+
+class ChatEnabledRequest(BaseModel):
+    enabled: bool
+
+
+class ChatEnabledResponse(BaseModel):
+    chat_enabled: bool
