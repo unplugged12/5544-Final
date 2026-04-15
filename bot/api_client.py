@@ -83,3 +83,11 @@ class BackendClient:
         """GET /api/settings/chat-enabled — return the chat-enabled DB flag."""
         data = await self._get("/api/settings/chat-enabled")
         return data.get("chat_enabled", True)
+
+    async def set_chat_enabled(self, enabled: bool) -> dict:
+        """POST /api/settings/chat-enabled — set the chat-enabled DB flag.
+
+        Payload shape matches ChatEnabledRequest from backend/models/schemas.py:
+        {"enabled": bool}
+        """
+        return await self._post("/api/settings/chat-enabled", {"enabled": enabled})

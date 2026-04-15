@@ -39,6 +39,13 @@ class Settings(BaseSettings):
     CHAT_ALLOWED_URL_DOMAINS: str = "discord.com"
     CHAT_DAILY_TOKEN_BUDGET: int = 200000
 
+    # Observability (PR 7) — both must be overridden in production deployments.
+    # The sentinel value "REPLACE_ME_WITH_SECRET" is intentional: it causes the
+    # metrics endpoint to return 503 in any environment that hasn't been properly
+    # configured, preventing silent operation with a weak default.
+    CHAT_LOG_HMAC_SECRET: str = "REPLACE_ME_WITH_SECRET"
+    CHAT_ADMIN_TOKEN: str = "REPLACE_ME_WITH_ADMIN_TOKEN"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

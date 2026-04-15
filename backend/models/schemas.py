@@ -181,6 +181,7 @@ class ChatResponse(BaseModel):
     session_id: str
     refusal: bool
     provider_used: str
+    injection_marker_seen: bool = False  # PR 7: exposed for auto-timeout in bot rate limiter
 
 
 class ChatEnabledRequest(BaseModel):

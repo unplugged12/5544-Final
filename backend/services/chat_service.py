@@ -13,11 +13,16 @@ Flow per handle() call:
   8. Scrub output via chat_guard.scrub_output.
   9. Persist user turn and assistant turn to chat_repo.
  10. Audit via audit_service.log_interaction.
- 11. Return ChatResponse.
+ 11. Emit structured JSON log (PR 7: observability).
+ 12. Every 50th turn, run drift watcher (PR 7: anomaly detection).
+ 13. Return ChatResponse.
 """
 
 import hashlib
+import hmac
+import json
 import logging
+import time
 
 from models.enums import Severity, TaskType
 from models.schemas import ChatResponse
@@ -41,6 +46,33 @@ _BLOCK_SEVERITIES: frozenset[str] = frozenset(
     [Severity.HIGH.value, Severity.CRITICAL.value]
 )
 
+# ---------------------------------------------------------------------------
+# PR 7: turn counter for drift watcher gate.
+# Using a module-level counter is intentional at class-project scale — it avoids
+# background task complexity (APScheduler, asyncio tasks) while providing a
+# reasonable sampling rate. Every 50th turn triggers a 1h lookback query,
+# so at 100 req/min the DB query runs at most ~2×/min. Thread-safety is not
+# a concern because asyncio is single-threaded per event loop.
+# ---------------------------------------------------------------------------
+_TURN_COUNTER = 0
+
+# ---------------------------------------------------------------------------
+# PR 7 fix (P2): HMAC secret sentinel guard.
+# If CHAT_LOG_HMAC_SECRET is unconfigured (empty or still the sentinel), the
+# sentinel key is public in the repo — anyone who knows it can compute the same
+# hashes and reverse the pseudonymization guarantee. Instead: log user_id_hash
+# as None and emit one error per process lifetime so operators notice the
+# misconfiguration without crashing the chat flow.
+# ---------------------------------------------------------------------------
+_HMAC_SECRET_SENTINEL = "REPLACE_ME_WITH_SECRET"
+_hmac_warned = False
+
+
+def reset_hmac_warning_state() -> None:
+    """Reset the per-process HMAC warning guard. For tests only."""
+    global _hmac_warned
+    _hmac_warned = False
+
 
 def _make_session_id(guild_id: str, channel_id: str, user_id: str) -> str:
     """Return a 16-char hex session identifier for a (guild, channel, user) triple.
@@ -50,6 +82,40 @@ def _make_session_id(guild_id: str, channel_id: str, user_id: str) -> str:
     """
     raw = f"{guild_id}|{channel_id}|{user_id}"
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def _compute_user_id_hash(user_id: str) -> str | None:
+    """Return a 16-char HMAC-SHA256 hex digest of user_id, or None if unconfigured.
+
+    guild_id and channel_id are not user-identifying snowflakes (they identify
+    the server/channel, not the person), so they are logged as plaintext.
+    user_id directly identifies the person and must be HMAC'd before logging.
+    The 16-char truncation is sufficient for correlation while bounding entropy
+    leakage.
+
+    If CHAT_LOG_HMAC_SECRET is unconfigured (empty string or sentinel), returns
+    None and emits a one-per-process-lifetime error log. This prevents the
+    sentinel key (public in the repo) from being used to produce deterministic
+    hashes that are reversible by anyone who knows the sentinel value.
+    Chat flow continues normally — only the log field is degraded to None.
+    """
+    global _hmac_warned
+    from config import settings as _settings  # local import avoids circular at module load
+    secret = _settings.CHAT_LOG_HMAC_SECRET or ""
+    if not secret or secret == _HMAC_SECRET_SENTINEL:
+        if not _hmac_warned:
+            logger.error(
+                "CHAT_LOG_HMAC_SECRET is unconfigured (empty or sentinel). "
+                "Chat turn logs will record user_id_hash=None. "
+                "Pseudonymization is disabled."
+            )
+            _hmac_warned = True
+        return None
+    return hmac.new(
+        secret.encode(),
+        user_id.encode(),
+        "sha256",
+    ).hexdigest()[:16]
 
 
 async def handle(
@@ -68,9 +134,15 @@ async def handle(
         content:    Raw user message text (already validated ≤1500 chars by schema).
 
     Returns:
-        ChatResponse with reply_text, session_id, refusal flag, and provider_used.
+        ChatResponse with reply_text, session_id, refusal flag, provider_used,
+        and injection_marker_seen (PR 7 — for auto-timeout in the bot rate limiter).
     """
+    global _TURN_COUNTER
+
     from config import settings  # lazy import — avoids circular imports at module load
+
+    # PR 7: start wall-clock timer for latency_ms
+    _start = time.monotonic()
 
     # ------------------------------------------------------------------
     # 1. Compute session_id
@@ -123,7 +195,11 @@ async def handle(
     # 7. Gated output moderation
     # ------------------------------------------------------------------
     refusal = False
-    if contains_risky_output_markers(response.text):
+    risky_output_marker_seen = contains_risky_output_markers(response.text)
+    classify_only_invoked = False
+
+    if risky_output_marker_seen:
+        classify_only_invoked = True
         moderation_result = await moderation_service.classify_only(response.text)
         if moderation_result.severity.value in _BLOCK_SEVERITIES:
             response_text = _CANNED_REFUSAL
@@ -178,19 +254,57 @@ async def handle(
     )
 
     # ------------------------------------------------------------------
-    # 11. Return
+    # 11. PR 7: Structured per-turn JSON log (observability).
+    #
+    # Privacy notes:
+    #   - user_id_hash: HMAC-SHA256 of user_id, NOT plaintext. Only the
+    #     server-side secret (CHAT_LOG_HMAC_SECRET) can link hashes to users.
+    #   - guild_id / channel_id are NOT logged as PII — they identify a
+    #     community/channel, not a person, so plaintext snowflakes are fine.
+    #   - Message content is NEVER logged — only lengths. This prevents log
+    #     sinks from becoming a secondary store of user messages.
     # ------------------------------------------------------------------
-    logger.info(
-        "chat_service.handle: session=%s refusal=%s injection_marker=%s provider=%s",
-        session_id,
-        refusal,
-        injection_marker_seen,
-        response.provider_name,
-    )
+    latency_ms = int((time.monotonic() - _start) * 1000)
 
+    # Extract token counts from provider response usage dict (0 if unavailable).
+    input_tokens: int = response.usage.get("input_tokens") or response.usage.get("prompt_tokens") or 0
+    output_tokens: int = response.usage.get("output_tokens") or response.usage.get("completion_tokens") or 0
+
+    log_record = {
+        "event": "chat_turn",
+        "session_id": session_id,
+        "user_id_hash": _compute_user_id_hash(user_id),
+        "guild_id": guild_id,
+        "channel_id": channel_id,
+        "input_chars": len(safe_content),
+        "output_chars": len(final_text),
+        "provider": response.provider_name,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "refusal": refusal,
+        "injection_marker_seen": injection_marker_seen,
+        "risky_output_marker_seen": risky_output_marker_seen,
+        "classify_only_invoked": classify_only_invoked,
+        "latency_ms": latency_ms,
+    }
+    logger.info(json.dumps(log_record))
+
+    # ------------------------------------------------------------------
+    # 12. PR 7: Drift watcher — sample every 50th turn to avoid a DB
+    # query on every request. See drift_watcher.py for thresholds.
+    # ------------------------------------------------------------------
+    _TURN_COUNTER += 1
+    if _TURN_COUNTER % 50 == 0:
+        from services import drift_watcher  # local import avoids circular at load
+        await drift_watcher.check_and_warn()
+
+    # ------------------------------------------------------------------
+    # 13. Return
+    # ------------------------------------------------------------------
     return ChatResponse(
         reply_text=final_text,
         session_id=session_id,
         refusal=refusal,
         provider_used=response.provider_name,
+        injection_marker_seen=injection_marker_seen,
     )
