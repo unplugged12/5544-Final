@@ -263,6 +263,31 @@ class TestScrubOutputSecretRedaction:
         assert "x" * 20 not in result
         assert "Bearer [redacted]" in result
 
+    # --- P2 fix: case-insensitive bearer token matching ---
+
+    @pytest.mark.parametrize(
+        "prefix",
+        [
+            "bearer ",    # all lowercase
+            "BEARER ",    # all uppercase
+            "Bearer ",    # canonical form (existing behavior preserved)
+            "bEaReR ",    # mixed case
+        ],
+    )
+    def test_bearer_token_case_insensitive_redaction(self, prefix):
+        """Any casing of the 'Bearer' scheme prefix must be redacted and normalized.
+
+        Token uses non-hex chars (x, z) so it doesn't trip _RE_HEX_TOKEN before
+        the bearer regex runs.  scrub_output applies hex-token step (5) before
+        bearer step (6), so the fixture must be hex-safe.
+        """
+        # 'xz' repeated — not valid hex, won't match _RE_HEX_TOKEN
+        token = "xz" * 10  # 20 chars, matches [A-Za-z0-9._-]{16,}
+        text = f"Authorization: {prefix}{token}"
+        result = scrub_output(text)
+        assert token not in result
+        assert "Bearer [redacted]" in result
+
     def test_redacts_discord_bot_token_shape(self):
         # Invented token matching the shape: base64url{24}.base64url{6}.base64url{27}
         # Do NOT use a real bot token — this is a synthetic fixture

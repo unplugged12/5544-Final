@@ -52,8 +52,8 @@ _RE_ANT_SECRET = re.compile(r"sk-ant-[A-Za-z0-9_\-]{16,}")
 # Long hex tokens (>= 20 consecutive hex chars) — word-boundary anchored
 _RE_HEX_TOKEN = re.compile(r"\b[a-fA-F0-9]{20,}\b")
 
-# Bearer tokens
-_RE_BEARER = re.compile(r"Bearer [A-Za-z0-9._\-]{16,}")
+# Bearer tokens — case-insensitive per RFC 7235 §2.1 (auth schemes are case-insensitive)
+_RE_BEARER = re.compile(r"Bearer [A-Za-z0-9._\-]{16,}", re.IGNORECASE)
 
 # Discord bot token shape: base64url{24}.base64url{6}.base64url{27+}
 _RE_DISCORD_TOKEN = re.compile(
@@ -219,7 +219,7 @@ def scrub_output(text: str) -> str:
     # 5. Long hex tokens
     text = _RE_HEX_TOKEN.sub("[redacted-token]", text)
 
-    # 6. Bearer tokens
+    # 6. Bearer tokens — normalize to canonical "Bearer [redacted]" regardless of input casing
     text = _RE_BEARER.sub("Bearer [redacted]", text)
 
     return text
