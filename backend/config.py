@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # Chat feature
+    CHAT_MODEL_MAX_TOKENS: int = 300
+    CHAT_INPUT_MAX_CHARS: int = 1500
+    CHAT_HISTORY_MAX_TURNS: int = 6
+    CHAT_HISTORY_TTL_MINUTES: int = 15
+    CHAT_ALLOWED_URL_DOMAINS: str = "discord.com"
+    CHAT_DAILY_TOKEN_BUDGET: int = 200000
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

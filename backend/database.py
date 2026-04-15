@@ -43,13 +43,27 @@ CREATE INDEX IF NOT EXISTS idx_mod_events_created ON moderation_events(created_a
 
 CREATE TABLE IF NOT EXISTS interaction_history (
     interaction_id TEXT PRIMARY KEY,
-    task_type TEXT NOT NULL CHECK(task_type IN ('faq','summary','mod_draft','moderation')),
+    task_type TEXT NOT NULL CHECK(task_type IN ('faq','summary','mod_draft','moderation','chat')),
     input_text TEXT NOT NULL,
     output_text TEXT NOT NULL,
     citations TEXT NOT NULL DEFAULT '[]',
     provider_used TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS chat_turns (
+    turn_id     TEXT PRIMARY KEY,
+    session_id  TEXT NOT NULL,
+    guild_id    TEXT NOT NULL,
+    channel_id  TEXT NOT NULL,
+    user_id     TEXT NOT NULL,
+    role        TEXT NOT NULL CHECK(role IN ('user','assistant')),
+    content     TEXT NOT NULL,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    expires_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_chat_session_time
+    ON chat_turns(session_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY,
@@ -62,6 +76,43 @@ async def init_db() -> None:
     """Create tables and seed defaults.  Called once at startup."""
     logger.info("Initializing database at %s", settings.SQLITE_PATH)
     async with aiosqlite.connect(settings.SQLITE_PATH) as db:
+        # ------------------------------------------------------------------
+        # Migration: rebuild interaction_history CHECK constraint to include
+        # 'chat'.  SQLite does not support ALTER TABLE ... MODIFY COLUMN, so
+        # we must rename → recreate → copy → drop.
+        # On failure we preserve the _old table and log — startup continues.
+        # ------------------------------------------------------------------
+        try:
+            async with db.execute(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='interaction_history'"
+            ) as cur:
+                row = await cur.fetchone()
+            if row is not None and "'chat'" not in row[0]:
+                logger.info(
+                    "Migrating interaction_history CHECK constraint to include 'chat'"
+                )
+                await db.executescript("""
+                    ALTER TABLE interaction_history RENAME TO interaction_history_old;
+                    CREATE TABLE interaction_history (
+                        interaction_id TEXT PRIMARY KEY,
+                        task_type TEXT NOT NULL CHECK(task_type IN ('faq','summary','mod_draft','moderation','chat')),
+                        input_text TEXT NOT NULL,
+                        output_text TEXT NOT NULL,
+                        citations TEXT NOT NULL DEFAULT '[]',
+                        provider_used TEXT NOT NULL,
+                        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+                    );
+                    INSERT INTO interaction_history SELECT * FROM interaction_history_old;
+                    DROP TABLE interaction_history_old;
+                """)
+                await db.commit()
+                logger.info("interaction_history migration complete")
+        except Exception:
+            logger.exception(
+                "interaction_history migration failed — _old table preserved; "
+                "manual intervention required"
+            )
+
         await db.executescript(_DDL)
         await db.execute(
             "INSERT OR IGNORE INTO app_settings VALUES ('demo_mode', 'true')"
