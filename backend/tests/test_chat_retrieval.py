@@ -285,6 +285,28 @@ async def test_hallucinated_citation_label_dropped(fresh_db):
     assert result.citations == []
 
 
+async def test_citation_label_prefix_collision_is_not_false_positive(fresh_db):
+    """Regression (Codex P2 on PR #42): a reply citing "Rule 10" must not
+    also mark "Rule 1" as cited via plain substring match. Word-boundary
+    matching is required — "Rule 1" is not a standalone token inside
+    "Rule 10", so only rule_010 should appear in citations.
+    """
+    chunks = [
+        _chunk(source_id="rule_001", citation_label="Rule 1", title="No Harassment"),
+        _chunk(source_id="rule_010", citation_label="Rule 10", title="No Smurfing"),
+    ]
+    reply = "check Rule 10 — don't smurf."
+
+    result = await _handle(
+        "is smurfing allowed?",
+        retrieved_chunks=chunks,
+        provider_reply=reply,
+    )
+
+    assert result.citations == ["rule_010"]
+    assert "rule_001" not in result.citations
+
+
 # ---------------------------------------------------------------------------
 # Case 4 — Chunk content length cap enforced
 # ---------------------------------------------------------------------------

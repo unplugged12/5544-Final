@@ -22,6 +22,7 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 import time
 
 from models.enums import Severity, TaskType
@@ -122,14 +123,33 @@ def _build_reference_block(chunks: list[dict], max_chars: int) -> str:
     return "\n".join(lines)
 
 
+def _label_matches(label: str, reply_lower: str) -> bool:
+    """Return True if *label* appears in *reply_lower* on word boundaries.
+
+    Plain substring matching causes false positives when labels share a
+    numeric prefix — "Rule 1" would match inside "Rule 10" and every other
+    two-digit rule. Use regex word boundaries so "Rule 1" only matches a
+    standalone "Rule 1" token (the "0" following a "1" prevents a word
+    boundary, so "Rule 10" never matches "Rule 1").
+
+    Labels are user-editable KB metadata and may contain regex metacharacters
+    (parentheses, dots, etc.), so the label is escaped before compilation.
+    """
+    if not label:
+        return False
+    pattern = r"\b" + re.escape(label) + r"\b"
+    return re.search(pattern, reply_lower) is not None
+
+
 def _resolve_citations(reply_text: str, chunks: list[dict]) -> list[str]:
     """Return source_ids whose citation_label or title the reply actually references.
 
     Never trust the model to produce source_ids directly — it will hallucinate
     plausible-looking strings. Instead, check whether any retrieved chunk's
-    citation_label (or title as a fallback) appears in the reply text, and
-    return only those source_ids. A hallucinated label the model invented is
-    silently dropped.
+    citation_label (or title as a fallback) appears in the reply text on
+    word boundaries, and return only those source_ids. A hallucinated label
+    the model invented, or a substring-only prefix collision ("Rule 1" inside
+    "Rule 10"), is silently dropped.
     """
     if not chunks:
         return []
@@ -142,7 +162,7 @@ def _resolve_citations(reply_text: str, chunks: list[dict]) -> list[str]:
             continue
         label = (chunk.get("citation_label") or "").lower().strip()
         title = (chunk.get("title") or "").lower().strip()
-        if (label and label in lower_reply) or (title and title in lower_reply):
+        if _label_matches(label, lower_reply) or _label_matches(title, lower_reply):
             cited.append(source_id)
             seen.add(source_id)
     return cited
