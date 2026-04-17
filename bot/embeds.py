@@ -95,4 +95,17 @@ def build_moderation_alert(
             name="Action", value=data["suggested_action"], inline=True
         )
 
+    decision = data.get("discipline_decision")
+    if decision:
+        action = str(decision.get("action", "")).replace("_", " ")
+        reason = decision.get("reason", "")
+        label = "Discipline"
+        if decision.get("test_mode"):
+            label = "Discipline (test mode — no Discord action taken)"
+        value = _truncate(
+            f"**{action.upper()}** — {reason}" if reason else f"**{action.upper()}**",
+            1024,
+        )
+        embed.add_field(name=label, value=value, inline=False)
+
     return embed

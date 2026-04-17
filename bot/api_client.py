@@ -44,12 +44,30 @@ class BackendClient:
         """Draft a moderator response for a given situation."""
         return await self._post("/api/moderation/draft", {"situation": situation})
 
-    async def analyze(self, message_content: str, source: str = "discord") -> dict:
-        """Run moderation analysis on a message."""
-        return await self._post(
-            "/api/moderation/analyze",
-            {"message_content": message_content, "source": source},
-        )
+    async def analyze(
+        self,
+        message_content: str,
+        source: str = "discord",
+        *,
+        discord_user_id: str | None = None,
+        discord_guild_id: str | None = None,
+    ) -> dict:
+        """Run moderation analysis on a message.
+
+        Discord IDs are forwarded so the backend's progressive-discipline
+        engine can update the per-user ledger. Omitting them yields the
+        legacy behaviour: an event is created but no discipline action
+        is evaluated.
+        """
+        payload: dict[str, Any] = {
+            "message_content": message_content,
+            "source": source,
+        }
+        if discord_user_id is not None:
+            payload["discord_user_id"] = discord_user_id
+        if discord_guild_id is not None:
+            payload["discord_guild_id"] = discord_guild_id
+        return await self._post("/api/moderation/analyze", payload)
 
     async def get_demo_mode(self) -> bool:
         """Return the current demo-mode flag."""
