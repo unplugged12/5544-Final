@@ -2,11 +2,11 @@
 
 import logging
 
-from models.schemas import Citation, TaskResponse
+from models.schemas import TaskResponse
 from models.enums import TaskType
 from prompts.faq_prompt import get_system_prompt
 from services import audit_service, provider_service, retrieval_service
-from services.utils import extract_confidence
+from services.utils import build_citations_and_rule, extract_confidence
 
 logger = logging.getLogger(__name__)
 
@@ -30,25 +30,10 @@ async def ask(question: str) -> TaskResponse:
     # 3. Parse response
     body, confidence_note = extract_confidence(result.text)
 
-    # 4. Build citations from chunks
-    citations = [
-        Citation(
-            source_id=c["source_id"],
-            citation_label=c["citation_label"],
-            snippet=c["content"][:150],
-        )
-        for c in chunks
-    ]
+    # 4. Build citations + rule match + source IDs
+    citations, matched_rule, raw_source_ids = build_citations_and_rule(chunks)
 
-    # 5. Determine matched_rule — first rule-type source, if any
-    matched_rule = next(
-        (c["citation_label"] for c in chunks if c.get("source_type") == "rule"),
-        None,
-    )
-
-    raw_source_ids = [c["source_id"] for c in chunks]
-
-    # 6. Audit
+    # 5. Audit
     await audit_service.log_interaction(
         task_type=TaskType.FAQ.value,
         input_text=question,

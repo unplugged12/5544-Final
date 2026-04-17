@@ -10,6 +10,7 @@ import PromptInput from "./shared/PromptInput.jsx";
 import ResponsePanel from "./shared/ResponsePanel.jsx";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
+import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ReviewQueue.css";
 
 export default function ReviewQueue() {
@@ -137,7 +138,7 @@ export default function ReviewQueue() {
                 </div>
                 {event.suggested_action && (
                   <span className="review-queue__suggested-action">
-                    Suggested: {event.suggested_action.replace(/_/g, " ")}
+                    Suggested: {formatEnumValue(event.suggested_action)}
                   </span>
                 )}
               </div>

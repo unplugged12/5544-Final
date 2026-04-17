@@ -1,6 +1,7 @@
 import SeverityBadge from "./SeverityBadge.jsx";
 import RuleMatchChip from "./RuleMatchChip.jsx";
 import CitationBadge from "./CitationBadge.jsx";
+import { formatEnumValue } from "../../utils/formatEnum.js";
 import "./ResponsePanel.css";
 
 export default function ResponsePanel({ response }) {
@@ -33,7 +34,7 @@ export default function ResponsePanel({ response }) {
           <div className="response-panel__meta-row">
             <span className="response-panel__meta-label">Suggested Action:</span>
             <span className="response-panel__action">
-              {suggested_action.replace(/_/g, " ")}
+              {formatEnumValue(suggested_action)}
             </span>
           </div>
         )}

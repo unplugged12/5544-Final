@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { getHistory } from "../api.js";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
+import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ModerationHistory.css";
 
 const STATUS_FILTERS = [
@@ -170,7 +171,7 @@ export default function ModerationHistory() {
                       event.status
                     )}`}
                   >
-                    {event.status ? event.status.replace(/_/g, " ") : "--"}
+                    {event.status ? formatEnumValue(event.status) : "--"}
                   </span>
                 </span>
                 <span className="moderation-history__col moderation-history__col--rule">
@@ -213,7 +214,7 @@ export default function ModerationHistory() {
                     </span>
                     <span>
                       {event.suggested_action
-                        ? event.suggested_action.replace(/_/g, " ")
+                        ? formatEnumValue(event.suggested_action)
                         : "--"}
                     </span>
                   </div>
