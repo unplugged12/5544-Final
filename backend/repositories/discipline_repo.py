@@ -182,7 +182,12 @@ async def mark_actions_undone_for_event(event_id: str) -> int:
 
 
 async def has_kick_for_user(guild_id: str, user_id: str) -> bool:
-    """Return True if there is a non-undone kick on record for this user."""
+    """Return True if there is a real (non-test-mode, non-undone) kick on record.
+
+    Test-mode kicks are excluded so dry-run runs don't poison the reoffense
+    lookup: once test mode is turned off, real violations must not be
+    escalated on the basis of a simulated kick that never actually happened.
+    """
     async with aiosqlite.connect(settings.SQLITE_PATH) as db:
         cursor = await db.execute(
             """
@@ -191,6 +196,7 @@ async def has_kick_for_user(guild_id: str, user_id: str) -> bool:
                AND user_id = ?
                AND action_type = 'kick'
                AND undone_at IS NULL
+               AND test_mode = 0
              LIMIT 1
             """,
             (guild_id, user_id),

@@ -231,6 +231,46 @@ async def test_test_mode_flag_is_recorded(seeded_db):
 
 
 @pytest.mark.asyncio
+async def test_test_mode_kick_does_not_escalate_after_flip(seeded_db):
+    """A test-mode (simulated) kick must not trigger a real timed-ban later.
+
+    Regression: has_kick_for_user used to look at every non-undone kick row,
+    so dry-run runs in test mode would poison the reoffense lookup once
+    test mode was turned off.
+    """
+    # Test mode ON: first violation escalates to a (simulated) KICK.
+    await settings_repo.set("test_mode", "true")
+    await _insert_event(event_id="ev_sim", severity=Severity.CRITICAL)
+    sim = await discipline_service.decide_and_record(
+        event_id="ev_sim",
+        guild_id=GUILD,
+        user_id=USER,
+        category=ViolationType.HATE_SPEECH.value,
+        severity=Severity.CRITICAL,
+    )
+    assert sim.action == DisciplineAction.KICK
+    assert sim.test_mode is True
+
+    # Flip test mode OFF. Next offense should NOT see the simulated kick.
+    await settings_repo.set("test_mode", "false")
+    assert await discipline_repo.has_kick_for_user(GUILD, USER) is False
+
+    # Undo the first simulated ledger so we can observe a clean WARN path.
+    await discipline_service.undo_for_event("ev_sim")
+
+    await _insert_event(event_id="ev_real", severity=Severity.LOW)
+    real = await discipline_service.decide_and_record(
+        event_id="ev_real",
+        guild_id=GUILD,
+        user_id=USER,
+        category=ViolationType.SPAM.value,
+        severity=Severity.LOW,
+    )
+    # Without the test-mode-aware filter this would be TIMED_BAN.
+    assert real.action == DisciplineAction.WARN
+
+
+@pytest.mark.asyncio
 async def test_repeat_category_policy_can_be_disabled(seeded_db):
     await settings_repo.set("discipline_repeat_category_kicks", "false")
 

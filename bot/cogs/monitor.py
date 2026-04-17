@@ -163,18 +163,25 @@ class MonitorCog(commands.Cog):
             )
             return "Would have kicked"
 
-        member = message.guild.get_member(message.author.id) if message.guild else None
-        if member is None:
-            log.warning("Kick target %s not found in guild cache", message.author.id)
-            return "Kick skipped (target not in guild)"
+        if message.guild is None:
+            log.warning("Kick skipped — message has no guild context")
+            return "Kick skipped (no guild)"
+
+        # Members intent is not enabled, so the member cache is always cold;
+        # fall back to the message author (any Snowflake works with Guild.kick).
+        member = message.guild.get_member(message.author.id)
+        target: discord.abc.Snowflake = member or message.author
         try:
-            await member.kick(reason=reason or "Progressive discipline: kick")
+            await message.guild.kick(
+                target,
+                reason=reason or "Progressive discipline: kick",
+            )
             return "User kicked"
         except discord.Forbidden:
-            log.warning("Missing permissions to kick %s", member.id)
+            log.warning("Missing permissions to kick %s", message.author.id)
             return "Kick skipped (missing permission)"
         except discord.HTTPException as exc:
-            log.warning("Kick failed for %s: %s", member.id, exc)
+            log.warning("Kick failed for %s: %s", message.author.id, exc)
             return "Kick failed"
 
     async def _timed_ban_member(
