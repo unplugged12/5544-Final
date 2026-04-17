@@ -95,8 +95,8 @@ def test_rules_count(rules):
 
 
 def test_faqs_count(faqs):
-    """faqs.json must contain exactly 30 FAQs."""
-    assert len(faqs) == 30
+    """faqs.json must contain exactly 31 FAQs."""
+    assert len(faqs) == 31
 
 
 def test_announcements_count(announcements):
