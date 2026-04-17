@@ -88,44 +88,44 @@ body {
 }
 
 /* Aurora / mesh background — behind all content, non-interactive.
-   Two layers drift at different speeds for subtle parallax depth.
+   Two layers drift at different speeds for visible parallax depth.
    Inset is negative so transforms never expose a bare edge. */
 body::before {
   content: "";
   position: fixed;
-  inset: -8%;
+  inset: -15%;
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(16, 185, 129, 0.18), transparent 60%),
-    radial-gradient(ellipse 55% 45% at 85% 90%, rgba(20, 184, 166, 0.12), transparent 60%),
-    radial-gradient(ellipse 40% 35% at 70% 20%, rgba(251, 191, 36, 0.06), transparent 65%),
+    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(16, 185, 129, 0.28), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 85% 90%, rgba(20, 184, 166, 0.20), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 70% 20%, rgba(251, 191, 36, 0.10), transparent 65%),
     var(--color-bg);
-  animation: aurora-drift-a 28s var(--ease-standard) infinite alternate;
+  animation: aurora-drift-a 18s var(--ease-standard) infinite alternate;
   will-change: transform, opacity;
 }
 
 body::after {
   content: "";
   position: fixed;
-  inset: -8%;
+  inset: -15%;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 45% at 75% 30%, rgba(16, 185, 129, 0.08), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20, 184, 166, 0.07), transparent 70%);
-  animation: aurora-drift-b 36s var(--ease-standard) infinite alternate;
+    radial-gradient(ellipse 55% 45% at 75% 30%, rgba(16, 185, 129, 0.14), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20, 184, 166, 0.12), transparent 70%);
+  animation: aurora-drift-b 24s var(--ease-standard) infinite alternate;
   will-change: transform, opacity;
 }
 
 @keyframes aurora-drift-a {
-  0%   { transform: translate3d(0, 0, 0) scale(1);         opacity: 0.92; }
-  100% { transform: translate3d(-3%, 2%, 0) scale(1.06);   opacity: 1;    }
+  0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg);           opacity: 0.85; }
+  100% { transform: translate3d(-10%, 6%, 0) scale(1.18) rotate(-4deg);   opacity: 1;    }
 }
 
 @keyframes aurora-drift-b {
-  0%   { transform: translate3d(0, 0, 0) scale(1.02);      opacity: 0.7;  }
-  100% { transform: translate3d(4%, -3%, 0) scale(1.08);   opacity: 1;    }
+  0%   { transform: translate3d(0, 0, 0) scale(1.05) rotate(0deg);        opacity: 0.6;  }
+  100% { transform: translate3d(12%, -8%, 0) scale(1.22) rotate(5deg);    opacity: 1;    }
 }
 
 #root {
