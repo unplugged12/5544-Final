@@ -95,3 +95,21 @@ export function getHistory(limit = 50, offset = 0, status) {
   }
   return request(url);
 }
+
+export function getAllSettings() {
+  return request("/api/settings");
+}
+
+export function updateSettings(updates) {
+  return request("/api/settings", {
+    method: "POST",
+    body: JSON.stringify({ updates }),
+  });
+}
+
+export function undoDisciplineForEvent(eventId) {
+  return request(`/api/moderation/undo/${encodeURIComponent(eventId)}`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
