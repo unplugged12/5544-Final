@@ -50,7 +50,7 @@ app = FastAPI(
 # CORS — must be added BEFORE routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL, "http://localhost:5173"],
+    allow_origins=[settings.FRONTEND_URL, "http://localhost:15173"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

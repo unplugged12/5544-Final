@@ -114,7 +114,7 @@ docker compose up --build
 ```bash
 # Terminal 1 — Backend
 cd backend && pip install -r requirements.txt
-SQLITE_PATH=../data/copilot.db CHROMA_PERSIST_DIR=../data/chroma uvicorn main:app --port 8000
+SQLITE_PATH=../data/copilot.db CHROMA_PERSIST_DIR=../data/chroma uvicorn main:app --port 18000
 
 # Terminal 2 — Frontend
 cd frontend && npm install && npm run dev

@@ -38,7 +38,7 @@ class Config:
         sandbox_id_raw = os.environ.get("SANDBOX_CHANNEL_ID", "")
         if not sandbox_id_raw:
             raise ValueError("SANDBOX_CHANNEL_ID environment variable is required")
-        backend_url = os.environ.get("BACKEND_URL", "http://localhost:8000")
+        backend_url = os.environ.get("BACKEND_URL", "http://localhost:18000")
 
         chat_enabled_raw = os.environ.get("CHAT_ENABLED", "true").lower()
         chat_enabled = chat_enabled_raw not in ("false", "0", "no")

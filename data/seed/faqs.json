@@ -239,6 +239,14 @@
       "category": "streaming",
       "tags": ["streamer", "role", "content-creator", "application"],
       "citation_label": "FAQ: Streamer Role"
+    },
+    {
+      "source_id": "faq_031",
+      "question": "Is swearing allowed in chat? Can I say damn, shit, or fuck?",
+      "answer": "Casual swearing is allowed — there is no blanket profanity filter. The line is about WHO or WHAT the words are aimed at, not the words themselves. Rule 1 (No Harassment or Bullying) prohibits using any language to target, threaten, or bully a member. Rule 2 (No Hate Speech or Slurs) means zero tolerance for racial, ethnic, homophobic, or other slurs — instant permanent ban with no appeal. So 'holy shit that was a clutch' is fine, but 'fuck you [username]' is not. Keep competitive trash talk about gameplay, never about a person.",
+      "category": "conduct",
+      "tags": ["profanity", "swearing", "language", "conduct", "trash-talk"],
+      "citation_label": "FAQ: Swearing and Language Rules"
     }
   ]
 }
