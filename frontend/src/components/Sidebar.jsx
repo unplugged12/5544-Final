@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import "./Sidebar.css";
 
 const TABS = [
@@ -14,18 +15,31 @@ export default function Sidebar({ activeTab, onTabChange }) {
   return (
     <aside className="sidebar">
       <nav className="sidebar__nav">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            className={`sidebar__tab ${
-              activeTab === tab.key ? "sidebar__tab--active" : ""
-            }`}
-            onClick={() => onTabChange(tab.key)}
-          >
-            <span className="sidebar__tab-icon">{tab.icon}</span>
-            <span className="sidebar__tab-label">{tab.label}</span>
-          </button>
-        ))}
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={`sidebar__tab ${isActive ? "sidebar__tab--active" : ""}`}
+              onClick={() => onTabChange(tab.key)}
+              aria-current={isActive ? "page" : undefined}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="sidebar-active-pill"
+                  className="sidebar__pill"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  aria-hidden="true"
+                />
+              )}
+              <span className="sidebar__tab-icon" aria-hidden="true">
+                {tab.icon}
+              </span>
+              <span className="sidebar__tab-label">{tab.label}</span>
+            </button>
+          );
+        })}
       </nav>
     </aside>
   );
