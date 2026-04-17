@@ -8,6 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 from models.enums import (
+    DisciplineAction,
     EventSource,
     ModerationStatus,
     Severity,
@@ -67,6 +68,17 @@ class TaskResponse(BaseModel):
 # Moderation events
 # ---------------------------------------------------------------------------
 
+class DisciplineDecisionPayload(BaseModel):
+    """Serialised discipline-engine output for API responses."""
+
+    action: DisciplineAction
+    reason: str
+    points_total: int
+    window_days: int
+    test_mode: bool
+    ban_minutes: int | None = None
+
+
 class ModerationEventResponse(BaseModel):
     event_id: str
     message_content: str
@@ -80,6 +92,12 @@ class ModerationEventResponse(BaseModel):
     created_at: str
     resolved_at: str | None = None
     resolved_by: str | None = None
+    discord_user_id: str | None = None
+    discord_guild_id: str | None = None
+    discipline_action: DisciplineAction | None = None
+    # Populated only on the immediate /analyze response — not stored on
+    # the event row. Lets the bot act on the decision without a second call.
+    discipline_decision: DisciplineDecisionPayload | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -101,6 +119,22 @@ class ModDraftRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     message_content: str
     source: EventSource = EventSource.DASHBOARD
+    # Bot populates these for Discord-sourced analyses so the discipline
+    # engine knows whose ledger to update. Dashboard analyses (Review Queue
+    # test box) leave them unset and skip the discipline branch.
+    discord_user_id: str | None = None
+    discord_guild_id: str | None = None
+
+    @field_validator("discord_user_id", "discord_guild_id")
+    @classmethod
+    def _validate_optional_snowflake(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not re.fullmatch(r"\d{1,20}", v):
+            raise ValueError(
+                "must be a Discord snowflake (1–20 decimal digits)"
+            )
+        return v
 
 
 class DemoModeRequest(BaseModel):
@@ -190,3 +224,48 @@ class ChatEnabledRequest(BaseModel):
 
 class ChatEnabledResponse(BaseModel):
     chat_enabled: bool
+
+
+# ---------------------------------------------------------------------------
+# Generic settings CRUD
+# ---------------------------------------------------------------------------
+
+
+# Only these keys are writeable via the generic settings endpoint. The
+# allow-list is intentional: it keeps ad-hoc new keys from being injected
+# via the portal and, more importantly, prevents secrets (API keys,
+# Discord tokens, HMAC secrets) from ever being surfaced here. Secrets
+# remain env-only and never pass through this endpoint.
+WRITEABLE_SETTINGS_KEYS = frozenset(
+    {
+        "demo_mode",
+        "test_mode",
+        "chat_enabled",
+        "discipline_points_threshold",
+        "discipline_window_days",
+        "discipline_repeat_category_kicks",
+        "discipline_ban_minutes",
+    }
+)
+
+
+class SettingsPayload(BaseModel):
+    """Current value of every exposed setting + typed conveniences."""
+
+    settings: dict[str, str]
+
+
+class SettingsBatchUpdate(BaseModel):
+    """Dict of key → string value. Server rejects keys outside the allow-list."""
+
+    updates: dict[str, str]
+
+    @field_validator("updates")
+    @classmethod
+    def _reject_unknown_keys(cls, v: dict[str, str]) -> dict[str, str]:
+        extras = set(v) - WRITEABLE_SETTINGS_KEYS
+        if extras:
+            raise ValueError(
+                f"unknown or non-writeable settings keys: {sorted(extras)}"
+            )
+        return v

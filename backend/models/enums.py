@@ -54,3 +54,22 @@ class ViolationType(str, Enum):
 class EventSource(str, Enum):
     DISCORD = "discord"
     DASHBOARD = "dashboard"
+
+
+class DisciplineAction(str, Enum):
+    """Outcome of the progressive-discipline engine for a single event."""
+
+    NONE = "none"
+    WARN = "warn"
+    KICK = "kick"
+    TIMED_BAN = "timed_ban"
+
+
+class ModActionType(str, Enum):
+    """Types of recorded moderator or bot actions (audit trail)."""
+
+    WARN = "warn"
+    KICK = "kick"
+    TIMED_BAN = "timed_ban"
+    UNDO = "undo"
+    DELETE_MESSAGE = "delete_message"

@@ -36,10 +36,44 @@ CREATE TABLE IF NOT EXISTS moderation_events (
     source TEXT NOT NULL DEFAULT 'dashboard' CHECK(source IN ('discord','dashboard')),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     resolved_at TEXT,
-    resolved_by TEXT
+    resolved_by TEXT,
+    discord_user_id TEXT,
+    discord_guild_id TEXT,
+    discipline_action TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_mod_events_status ON moderation_events(status);
 CREATE INDEX IF NOT EXISTS idx_mod_events_created ON moderation_events(created_at DESC);
+-- NOTE: idx_mod_events_user is created AFTER the ALTER TABLE ADD COLUMN
+-- migration below, since the indexed columns don't exist yet on legacy DBs.
+
+CREATE TABLE IF NOT EXISTS user_violations (
+    violation_id TEXT PRIMARY KEY,
+    event_id TEXT NOT NULL,
+    guild_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    category TEXT NOT NULL,
+    severity TEXT NOT NULL CHECK(severity IN ('low','medium','high','critical')),
+    points INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    revoked_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_user_violations_user ON user_violations(guild_id, user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS mod_actions (
+    action_id TEXT PRIMARY KEY,
+    event_id TEXT,
+    guild_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    action_type TEXT NOT NULL CHECK(action_type IN ('warn','kick','timed_ban','undo','delete_message')),
+    reason TEXT,
+    actor TEXT NOT NULL,
+    test_mode INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    undone_at TEXT,
+    details TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_mod_actions_user ON mod_actions(guild_id, user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mod_actions_event ON mod_actions(event_id);
 
 CREATE TABLE IF NOT EXISTS interaction_history (
     interaction_id TEXT PRIMARY KEY,
@@ -114,9 +148,46 @@ async def init_db() -> None:
             )
 
         await db.executescript(_DDL)
+
+        # ------------------------------------------------------------------
+        # Migration: add discord_user_id, discord_guild_id, discipline_action
+        # to moderation_events on existing databases. SQLite accepts
+        # ADD COLUMN for nullable TEXT without issue.
+        # ------------------------------------------------------------------
+        async with db.execute("PRAGMA table_info(moderation_events)") as cur:
+            cols = {row[1] for row in await cur.fetchall()}
+        for col_def in (
+            ("discord_user_id", "TEXT"),
+            ("discord_guild_id", "TEXT"),
+            ("discipline_action", "TEXT"),
+        ):
+            name, sql_type = col_def
+            if name not in cols:
+                await db.execute(
+                    f"ALTER TABLE moderation_events ADD COLUMN {name} {sql_type}"
+                )
+                logger.info("Added moderation_events.%s column", name)
+
+        # Now that the columns definitely exist, create the composite index.
         await db.execute(
-            "INSERT OR IGNORE INTO app_settings VALUES ('demo_mode', 'true')"
+            "CREATE INDEX IF NOT EXISTS idx_mod_events_user "
+            "ON moderation_events(discord_guild_id, discord_user_id, created_at DESC)"
         )
+
+        # Seed settings defaults — only inserted if the key is missing.
+        _DEFAULT_SETTINGS = [
+            ("demo_mode", "true"),
+            ("test_mode", "false"),
+            ("discipline_points_threshold", "5"),
+            ("discipline_window_days", "30"),
+            ("discipline_repeat_category_kicks", "true"),
+            ("discipline_ban_minutes", "60"),
+        ]
+        for key, value in _DEFAULT_SETTINGS:
+            await db.execute(
+                "INSERT OR IGNORE INTO app_settings (key, value) VALUES (?, ?)",
+                (key, value),
+            )
         await db.commit()
     logger.info("Database initialized successfully")
 

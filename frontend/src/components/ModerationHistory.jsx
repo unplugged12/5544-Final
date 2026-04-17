@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getHistory } from "../api.js";
+import { getHistory, undoDisciplineForEvent } from "../api.js";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
 import { formatEnumValue } from "../utils/formatEnum.js";
@@ -50,6 +50,8 @@ export default function ModerationHistory() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
+  const [undoing, setUndoing] = useState(null);
+  const [undoMsg, setUndoMsg] = useState({});
 
   const fetchHistory = useCallback(async () => {
     setLoading(true);
@@ -76,6 +78,27 @@ export default function ModerationHistory() {
 
   const toggleExpand = (eventId) => {
     setExpandedId(expandedId === eventId ? null : eventId);
+  };
+
+  const handleUndo = async (eventId) => {
+    setUndoing(eventId);
+    setUndoMsg((m) => ({ ...m, [eventId]: "" }));
+    try {
+      const res = await undoDisciplineForEvent(eventId);
+      const msg = res.reason
+        ? `Undo: ${res.reason}`
+        : `Undone (${res.violations_revoked ?? 0} violations revoked, ${res.actions_marked_undone ?? 0} actions marked)`;
+      setUndoMsg((m) => ({ ...m, [eventId]: msg }));
+      // Refresh to pick up any backend-side state changes
+      fetchHistory();
+    } catch (err) {
+      setUndoMsg((m) => ({
+        ...m,
+        [eventId]: err.message || "Undo failed",
+      }));
+    } finally {
+      setUndoing(null);
+    }
   };
 
   return (
@@ -230,6 +253,40 @@ export default function ModerationHistory() {
                     </span>
                     <span>{formatTimestamp(event.resolved_at)}</span>
                   </div>
+                  {event.discipline_action && event.discipline_action !== "none" && (
+                    <div className="moderation-history__detail-row">
+                      <span className="moderation-history__detail-label">
+                        Discipline:
+                      </span>
+                      <span>{formatEnumValue(event.discipline_action)}</span>
+                    </div>
+                  )}
+                  {event.status === "auto_actioned" &&
+                    event.discord_user_id &&
+                    event.discipline_action &&
+                    event.discipline_action !== "none" && (
+                      <div className="moderation-history__undo">
+                        <button
+                          className="moderation-history__undo-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUndo(event.event_id);
+                          }}
+                          disabled={undoing === event.event_id}
+                        >
+                          {undoing === event.event_id ? "Undoing…" : "Undo discipline"}
+                        </button>
+                        {undoMsg[event.event_id] && (
+                          <span className="moderation-history__undo-msg">
+                            {undoMsg[event.event_id]}
+                          </span>
+                        )}
+                        <p className="moderation-history__undo-hint">
+                          Revokes this user's violation points and marks the kick/ban as undone.
+                          Any active Discord ban must be lifted manually in the server.
+                        </p>
+                      </div>
+                    )}
                 </div>
               )}
             </div>

@@ -43,3 +43,36 @@ async def get_demo_mode() -> bool:
 async def set_demo_mode(enabled: bool) -> None:
     """Convenience: persist demo_mode."""
     await set("demo_mode", "true" if enabled else "false")
+
+
+# ---------------------------------------------------------------------------
+# Typed helpers
+# ---------------------------------------------------------------------------
+
+
+async def get_bool(key: str, default: bool) -> bool:
+    val = await get(key)
+    if val is None:
+        return default
+    return val == "true"
+
+
+async def get_int(key: str, default: int) -> int:
+    val = await get(key)
+    if val is None:
+        return default
+    try:
+        return int(val)
+    except ValueError:
+        logger.warning("app_settings.%s is not an int: %r; using default %d", key, val, default)
+        return default
+
+
+async def get_all() -> dict[str, str]:
+    """Return every row from app_settings as a dict."""
+    async with aiosqlite.connect(app_settings.SQLITE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA journal_mode=WAL")
+        cursor = await db.execute("SELECT key, value FROM app_settings")
+        rows = await cursor.fetchall()
+        return {row["key"]: row["value"] for row in rows}
