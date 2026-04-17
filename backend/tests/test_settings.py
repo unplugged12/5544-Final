@@ -63,3 +63,65 @@ def test_demo_mode_response_shape(client):
     data = client.get("/api/settings/demo-mode").json()
     assert "demo_mode" in data
     assert isinstance(data["demo_mode"], bool)
+
+
+# ---------------------------------------------------------------------------
+# Generic settings CRUD
+# ---------------------------------------------------------------------------
+
+
+def test_get_all_settings_returns_allow_list(client):
+    """GET /api/settings surfaces every allow-listed key with seeded defaults."""
+    response = client.get("/api/settings")
+    assert response.status_code == 200
+
+    settings = response.json()["settings"]
+    # Seeded defaults that should be present
+    assert settings["demo_mode"] == "true"
+    assert settings["test_mode"] == "false"
+    assert settings["discipline_points_threshold"] == "5"
+    assert settings["discipline_window_days"] == "30"
+    assert settings["discipline_repeat_category_kicks"] == "true"
+    assert settings["discipline_ban_minutes"] == "60"
+    # chat_enabled is seeded on-demand by the /chat-enabled POST, so its key
+    # must exist (falls back to "") and never error.
+    assert "chat_enabled" in settings
+
+
+def test_post_settings_updates_multiple_keys(client):
+    """POST /api/settings persists a batch of settings and echoes the new state."""
+    response = client.post(
+        "/api/settings",
+        json={
+            "updates": {
+                "test_mode": "true",
+                "discipline_points_threshold": "8",
+                "discipline_ban_minutes": "120",
+            }
+        },
+    )
+    assert response.status_code == 200
+    settings = response.json()["settings"]
+    assert settings["test_mode"] == "true"
+    assert settings["discipline_points_threshold"] == "8"
+    assert settings["discipline_ban_minutes"] == "120"
+    # Untouched keys preserved
+    assert settings["demo_mode"] == "true"
+
+
+def test_post_settings_rejects_unknown_key(client):
+    """Keys outside the allow-list are rejected with 422."""
+    response = client.post(
+        "/api/settings",
+        json={"updates": {"OPENAI_API_KEY": "leaked"}},
+    )
+    assert response.status_code == 422
+
+
+def test_post_settings_rejects_secret_key(client):
+    """Secret keys must never be writeable through the generic endpoint."""
+    response = client.post(
+        "/api/settings",
+        json={"updates": {"DISCORD_TOKEN": "leaked"}},
+    )
+    assert response.status_code == 422

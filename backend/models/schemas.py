@@ -224,3 +224,48 @@ class ChatEnabledRequest(BaseModel):
 
 class ChatEnabledResponse(BaseModel):
     chat_enabled: bool
+
+
+# ---------------------------------------------------------------------------
+# Generic settings CRUD
+# ---------------------------------------------------------------------------
+
+
+# Only these keys are writeable via the generic settings endpoint. The
+# allow-list is intentional: it keeps ad-hoc new keys from being injected
+# via the portal and, more importantly, prevents secrets (API keys,
+# Discord tokens, HMAC secrets) from ever being surfaced here. Secrets
+# remain env-only and never pass through this endpoint.
+WRITEABLE_SETTINGS_KEYS = frozenset(
+    {
+        "demo_mode",
+        "test_mode",
+        "chat_enabled",
+        "discipline_points_threshold",
+        "discipline_window_days",
+        "discipline_repeat_category_kicks",
+        "discipline_ban_minutes",
+    }
+)
+
+
+class SettingsPayload(BaseModel):
+    """Current value of every exposed setting + typed conveniences."""
+
+    settings: dict[str, str]
+
+
+class SettingsBatchUpdate(BaseModel):
+    """Dict of key → string value. Server rejects keys outside the allow-list."""
+
+    updates: dict[str, str]
+
+    @field_validator("updates")
+    @classmethod
+    def _reject_unknown_keys(cls, v: dict[str, str]) -> dict[str, str]:
+        extras = set(v) - WRITEABLE_SETTINGS_KEYS
+        if extras:
+            raise ValueError(
+                f"unknown or non-writeable settings keys: {sorted(extras)}"
+            )
+        return v
