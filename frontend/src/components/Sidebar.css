@@ -1,8 +1,14 @@
 .sidebar {
   width: var(--sidebar-width);
   height: calc(100vh - var(--header-height) - var(--footer-height));
-  background-color: var(--color-bg-secondary);
-  border-right: 1px solid var(--color-border);
+  background: linear-gradient(
+    180deg,
+    rgba(26, 29, 39, 0.75) 0%,
+    rgba(26, 29, 39, 0.55) 100%
+  );
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   overflow-y: auto;
   position: fixed;
   top: var(--header-height);
@@ -17,6 +23,7 @@
 }
 
 .sidebar__tab {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -29,33 +36,58 @@
   font-size: 13px;
   font-weight: 500;
   text-align: left;
-  transition: all 0.15s ease;
   cursor: pointer;
+  overflow: hidden;
+  transition:
+    color var(--dur-base) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
 }
 
 .sidebar__tab:hover {
-  background-color: var(--color-bg-card);
+  background-color: rgba(255, 255, 255, 0.04);
   color: var(--color-text);
 }
 
 .sidebar__tab--active {
-  background-color: var(--color-primary);
   color: #ffffff;
 }
 
 .sidebar__tab--active:hover {
-  background-color: var(--color-primary-hover);
   color: #ffffff;
+  background-color: transparent;
+}
+
+/* Sliding gradient pill — one motion element shared across tabs via layoutId */
+.sidebar__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: var(--gradient-primary);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 6px 18px -6px rgba(16, 185, 129, 0.55);
+  z-index: 0;
 }
 
 .sidebar__tab-icon {
+  position: relative;
+  z-index: 1;
   font-size: 16px;
   width: 22px;
   text-align: center;
   flex-shrink: 0;
+  filter: grayscale(0.35) brightness(0.92);
+  transition: filter var(--dur-base) var(--ease-standard);
+}
+
+.sidebar__tab--active .sidebar__tab-icon,
+.sidebar__tab:hover .sidebar__tab-icon {
+  filter: grayscale(0) brightness(1.05);
 }
 
 .sidebar__tab-label {
+  position: relative;
+  z-index: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

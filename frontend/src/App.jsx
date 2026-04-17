@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { healthCheck, getDemoMode, setDemoMode } from "./api.js";
 import Sidebar from "./components/Sidebar.jsx";
 import StatusIndicator from "./components/shared/StatusIndicator.jsx";
@@ -30,6 +31,29 @@ function renderTab(activeTab) {
     default:
       return <KnowledgeBase />;
   }
+}
+
+function ConnectingSplash() {
+  return (
+    <div className="app app--splash">
+      <main className="app__splash">
+        <motion.div
+          className="splash"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0, 0, 0.2, 1] }}
+        >
+          <div className="splash__logo" aria-hidden="true">
+            <span className="splash__logo-text">ModBot</span>
+          </div>
+          <div className="splash__spinner" aria-hidden="true">
+            <span />
+          </div>
+          <p className="splash__message">Connecting to backend&hellip;</p>
+        </motion.div>
+      </main>
+    </div>
+  );
 }
 
 export default function App() {
@@ -66,56 +90,63 @@ export default function App() {
     }
   };
 
-  if (connectionStatus === "connecting") {
-    return (
-      <div className="app">
-        <main className="app__content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <p>Connecting to backend...</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (connectionStatus === "failed") {
-    return (
-      <div className="app">
-        <main
-          className="app__content"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "16px",
-          }}
-        >
-          <p>Backend unavailable &mdash; check that the server is running.</p>
-          <button className="app__retry-btn" onClick={connect}>
-            Retry
-          </button>
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="app">
-      <header className="app__header">
-        <div className="app__header-left">
-          <h1 className="app__title">Esports Mod Copilot</h1>
+    <MotionConfig reducedMotion="user">
+      {connectionStatus === "connecting" && <ConnectingSplash />}
+
+      {connectionStatus === "failed" && (
+        <div className="app">
+          <main
+            className="app__content"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "16px",
+            }}
+          >
+            <p>Backend unavailable &mdash; check that the server is running.</p>
+            <button className="app__retry-btn" onClick={connect}>
+              Retry
+            </button>
+          </main>
         </div>
-        <div className="app__header-right">
-          <StatusIndicator demoMode={demoMode} onToggle={handleToggleDemo} />
+      )}
+
+      {connectionStatus === "connected" && (
+        <div className="app">
+          <header className="app__header">
+            <div className="app__header-left">
+              <h1 className="app__title">Esports Mod Copilot</h1>
+            </div>
+            <div className="app__header-right">
+              <StatusIndicator demoMode={demoMode} onToggle={handleToggleDemo} />
+            </div>
+          </header>
+
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+
+          <main className="app__content">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                className="app__tab-panel"
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              >
+                {renderTab(activeTab)}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+
+          <footer className="app__footer">
+            <span>Esports Mod Copilot &mdash; POC</span>
+          </footer>
         </div>
-      </header>
-
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <main className="app__content">{renderTab(activeTab)}</main>
-
-      <footer className="app__footer">
-        <span>Esports Mod Copilot &mdash; POC</span>
-      </footer>
-    </div>
+      )}
+    </MotionConfig>
   );
 }

@@ -9,20 +9,50 @@
   min-height: 100vh;
 }
 
+.app--splash {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "splash";
+}
+
 .app__header {
   grid-area: header;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background-color: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(
+    180deg,
+    rgba(26, 29, 39, 0.72) 0%,
+    rgba(26, 29, 39, 0.5) 100%
+  );
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: var(--header-height);
   z-index: 50;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 8px 24px -16px rgba(0, 0, 0, 0.5);
+}
+
+.app__header::after {
+  /* Subtle top highlight — very thin gradient line */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.35) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 
 .app__header-left {
@@ -36,6 +66,10 @@
   font-weight: 700;
   color: var(--color-text);
   letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #e4e6eb 0%, #a7f3d0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .app__header-right {
@@ -52,18 +86,29 @@
   overflow-y: auto;
 }
 
+.app__tab-panel {
+  /* Ensures exit animation reserves its own layout */
+  display: block;
+  width: 100%;
+}
+
 .app__retry-btn {
   padding: 8px 24px;
   font-size: 13px;
   font-weight: 600;
   color: #ffffff;
-  background-color: var(--color-primary);
+  background: var(--gradient-primary);
   border-radius: 6px;
-  transition: background-color 0.2s ease;
+  transition: filter var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
 }
 
 .app__retry-btn:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
+  filter: brightness(1.1);
+}
+
+.app__retry-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .app__footer {
@@ -73,7 +118,6 @@
   justify-content: center;
   padding: 0 24px;
   background-color: var(--color-bg-secondary);
-  border-top: 1px solid var(--color-border);
   font-size: 12px;
   color: var(--color-text-muted);
   position: fixed;
@@ -82,4 +126,97 @@
   right: 0;
   height: var(--footer-height);
   z-index: 50;
+  border-top: 1px solid transparent;
+}
+
+.app__footer::before {
+  /* Thin gradient top border */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.35) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ============== Connecting splash ============== */
+
+.app__splash {
+  grid-area: splash;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 48px;
+  border-radius: 16px;
+  background: var(--glass-fill);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.splash__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.12) 0%,
+    rgba(20, 184, 166, 0.08) 100%
+  );
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.splash__logo-text {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 60%, #a7f3d0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.splash__spinner {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash__spinner span {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: splash-spin 0.8s linear infinite;
+}
+
+@keyframes splash-spin {
+  to { transform: rotate(360deg); }
+}
+
+.splash__message {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  letter-spacing: 0.01em;
 }
