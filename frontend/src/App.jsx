@@ -37,7 +37,8 @@ export default function App() {
   const [demoMode, setDemoModeState] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("connecting"); // "connecting" | "connected" | "failed"
 
-  useEffect(() => {
+  const connect = () => {
+    setConnectionStatus("connecting");
     healthCheck()
       .then(() => {
         setConnectionStatus("connected");
@@ -47,6 +48,11 @@ export default function App() {
       .catch(() => {
         setConnectionStatus("failed");
       });
+  };
+
+  useEffect(() => {
+    connect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleToggleDemo = async () => {
@@ -73,8 +79,20 @@ export default function App() {
   if (connectionStatus === "failed") {
     return (
       <div className="app">
-        <main className="app__content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <main
+          className="app__content"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+          }}
+        >
           <p>Backend unavailable &mdash; check that the server is running.</p>
+          <button className="app__retry-btn" onClick={connect}>
+            Retry
+          </button>
         </main>
       </div>
     );

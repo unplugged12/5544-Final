@@ -129,48 +129,77 @@ export default function ReviewQueue() {
         )}
 
         {!loading &&
-          pendingEvents.map((event) => (
-            <div key={event.event_id} className="review-queue__card">
-              <div className="review-queue__card-top">
-                <div className="review-queue__card-badges">
-                  <SeverityBadge level={event.severity} />
-                  <RuleMatchChip rule={event.matched_rule} />
+          pendingEvents.map((event) => {
+            const isBusy = actionLoading === event.event_id;
+            return (
+              <div
+                key={event.event_id}
+                className={`review-queue__card${
+                  isBusy ? " review-queue__card--busy" : ""
+                }`}
+                aria-busy={isBusy}
+              >
+                <div className="review-queue__card-top">
+                  <div className="review-queue__card-badges">
+                    <SeverityBadge level={event.severity} />
+                    <RuleMatchChip rule={event.matched_rule} />
+                  </div>
+                  {event.suggested_action && (
+                    <span className="review-queue__suggested-action">
+                      Suggested: {formatEnumValue(event.suggested_action)}
+                    </span>
+                  )}
                 </div>
-                {event.suggested_action && (
-                  <span className="review-queue__suggested-action">
-                    Suggested: {formatEnumValue(event.suggested_action)}
-                  </span>
+
+                <div className="review-queue__card-message">
+                  {event.message_content}
+                </div>
+
+                {event.explanation && (
+                  <p className="review-queue__card-explanation">
+                    {event.explanation}
+                  </p>
                 )}
-              </div>
 
-              <div className="review-queue__card-message">
-                {event.message_content}
+                <div className="review-queue__card-actions">
+                  <button
+                    className="review-queue__approve-btn"
+                    onClick={() => handleApprove(event.event_id)}
+                    disabled={isBusy}
+                  >
+                    {isBusy ? (
+                      <span className="review-queue__btn-busy">
+                        <span
+                          className="review-queue__spinner"
+                          aria-hidden="true"
+                        />
+                        Processing…
+                      </span>
+                    ) : (
+                      "Approve"
+                    )}
+                  </button>
+                  <button
+                    className="review-queue__reject-btn"
+                    onClick={() => handleReject(event.event_id)}
+                    disabled={isBusy}
+                  >
+                    {isBusy ? (
+                      <span className="review-queue__btn-busy">
+                        <span
+                          className="review-queue__spinner"
+                          aria-hidden="true"
+                        />
+                        Processing…
+                      </span>
+                    ) : (
+                      "Reject"
+                    )}
+                  </button>
+                </div>
               </div>
-
-              {event.explanation && (
-                <p className="review-queue__card-explanation">
-                  {event.explanation}
-                </p>
-              )}
-
-              <div className="review-queue__card-actions">
-                <button
-                  className="review-queue__approve-btn"
-                  onClick={() => handleApprove(event.event_id)}
-                  disabled={actionLoading === event.event_id}
-                >
-                  {actionLoading === event.event_id ? "..." : "Approve"}
-                </button>
-                <button
-                  className="review-queue__reject-btn"
-                  onClick={() => handleReject(event.event_id)}
-                  disabled={actionLoading === event.event_id}
-                >
-                  {actionLoading === event.event_id ? "..." : "Reject"}
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
     </div>
   );
