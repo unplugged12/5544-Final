@@ -161,9 +161,12 @@ def test_chat_missing_field_returns_422(client):
 # ---------------------------------------------------------------------------
 
 def test_chat_settings_get_default(client):
+    # init_db seeds chat_enabled=true so the ChatCog DB kill-switch doesn't
+    # silently drop every @-mention on a fresh DB. The env-level CHAT_ENABLED
+    # gate still runs first; this row controls the runtime /toggle-chat toggle.
     resp = client.get("/api/settings/chat-enabled")
     assert resp.status_code == 200
-    assert resp.json()["chat_enabled"] is False
+    assert resp.json()["chat_enabled"] is True
 
 
 def test_chat_settings_toggle(client):

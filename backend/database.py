@@ -182,6 +182,11 @@ async def init_db() -> None:
             ("discipline_window_days", "30"),
             ("discipline_repeat_category_kicks", "true"),
             ("discipline_ban_minutes", "60"),
+            # Seed chat_enabled=true so the ChatCog DB kill-switch doesn't
+            # silently drop every @-mention on a fresh DB. The env-level
+            # CHAT_ENABLED gate still runs first — this row only controls
+            # the runtime toggle surfaced via /toggle-chat.
+            ("chat_enabled", "true"),
         ]
         for key, value in _DEFAULT_SETTINGS:
             await db.execute(
