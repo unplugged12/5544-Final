@@ -216,6 +216,11 @@ class ChatResponse(BaseModel):
     refusal: bool
     provider_used: str
     injection_marker_seen: bool = False  # PR 7: exposed for auto-timeout in bot rate limiter
+    # Source IDs from knowledge_items that grounded this reply. Built from
+    # retrieved chunks (not from model output) and filtered to those whose
+    # citation_label or title the model actually referenced. Hallucinated
+    # IDs the model might produce are rejected server-side.
+    citations: list[str] = Field(default_factory=list)
 
 
 class ChatEnabledRequest(BaseModel):

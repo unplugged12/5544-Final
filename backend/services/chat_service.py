@@ -22,12 +22,13 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 import time
 
 from models.enums import Severity, TaskType
 from models.schemas import ChatResponse
 from repositories import chat_repo
-from services import audit_service, moderation_service, provider_service
+from services import audit_service, moderation_service, provider_service, retrieval_service
 from services.chat_guard import (
     contains_prompt_injection_markers,
     contains_risky_output_markers,
@@ -40,6 +41,11 @@ logger = logging.getLogger(__name__)
 
 # Canned in-character refusal phrase — literal string asserted by PR 6 adversarial suite.
 _CANNED_REFUSAL = "lol nah, not doing that. wanna ask about events instead?"
+
+# Source types eligible for chat retrieval. mod_note is intentionally excluded:
+# it may contain PII or draft discipline reasoning that should never surface in
+# a user-facing chat reply.
+_CHAT_RETRIEVAL_SOURCE_TYPES: list[str] = ["rule", "faq", "announcement"]
 
 # Severity values that trigger a reply replacement
 _BLOCK_SEVERITIES: frozenset[str] = frozenset(
@@ -72,6 +78,120 @@ def reset_hmac_warning_state() -> None:
     """Reset the per-process HMAC warning guard. For tests only."""
     global _hmac_warned
     _hmac_warned = False
+
+
+def _sanitize_reference_chunk(text: str, max_chars: int) -> str:
+    """Neutralize trust-boundary delimiters and cap length in a KB chunk.
+
+    Applied at query time before a chunk is injected into the LLM prompt.
+    Mirrors the guillemet substitution in chat_guard.sanitize_input so a
+    poisoned KB row containing ``<<<END_REFERENCE_CONTEXT>>>`` (or any other
+    triple-bracket sequence) cannot terminate the reference block early and
+    smuggle instructions into the model's trust-trusted context.
+
+    Length cap bounds the per-chunk token cost and limits the blast radius
+    of a single poisoned row.
+    """
+    text = text.replace("<<<", "\u2039\u2039\u2039")  # ‹‹‹
+    text = text.replace(">>>", "\u203A\u203A\u203A")  # ›››
+    if len(text) > max_chars:
+        text = text[:max_chars].rstrip() + "…"
+    return text
+
+
+def _build_reference_block(chunks: list[dict], max_chars: int) -> str:
+    """Assemble the <<<REFERENCE_CONTEXT>>> prompt block from retrieved chunks.
+
+    Each chunk is emitted with its citation_label and sanitized content so the
+    model has the label to cite by name, not by source_id. citation_label and
+    title are also sanitized — they come from KB metadata and must not be
+    trusted as commands.
+    """
+    if not chunks:
+        return ""
+
+    lines: list[str] = ["<<<REFERENCE_CONTEXT trust=trusted>>>"]
+    for chunk in chunks:
+        label = _sanitize_reference_chunk(
+            chunk.get("citation_label") or chunk.get("source_id", ""), max_chars=120
+        )
+        content = _sanitize_reference_chunk(chunk.get("content", ""), max_chars=max_chars)
+        lines.append(f"[{label}]")
+        lines.append(content)
+        lines.append("")
+    lines.append("<<<END_REFERENCE_CONTEXT>>>")
+    return "\n".join(lines)
+
+
+def _label_matches(label: str, reply_lower: str) -> bool:
+    """Return True if *label* appears in *reply_lower* on word boundaries.
+
+    Plain substring matching causes false positives when labels share a
+    numeric prefix — "Rule 1" would match inside "Rule 10" and every other
+    two-digit rule. Use regex word boundaries so "Rule 1" only matches a
+    standalone "Rule 1" token (the "0" following a "1" prevents a word
+    boundary, so "Rule 10" never matches "Rule 1").
+
+    Labels are user-editable KB metadata and may contain regex metacharacters
+    (parentheses, dots, etc.), so the label is escaped before compilation.
+    """
+    if not label:
+        return False
+    pattern = r"\b" + re.escape(label) + r"\b"
+    return re.search(pattern, reply_lower) is not None
+
+
+def _resolve_citations(reply_text: str, chunks: list[dict]) -> list[str]:
+    """Return source_ids whose citation_label or title the reply actually references.
+
+    Never trust the model to produce source_ids directly — it will hallucinate
+    plausible-looking strings. Instead, check whether any retrieved chunk's
+    citation_label (or title as a fallback) appears in the reply text on
+    word boundaries, and return only those source_ids. A hallucinated label
+    the model invented, or a substring-only prefix collision ("Rule 1" inside
+    "Rule 10"), is silently dropped.
+    """
+    if not chunks:
+        return []
+    lower_reply = reply_text.lower()
+    cited: list[str] = []
+    seen: set[str] = set()
+    for chunk in chunks:
+        source_id = chunk.get("source_id", "")
+        if not source_id or source_id in seen:
+            continue
+        label = (chunk.get("citation_label") or "").lower().strip()
+        title = (chunk.get("title") or "").lower().strip()
+        if _label_matches(label, lower_reply) or _label_matches(title, lower_reply):
+            cited.append(source_id)
+            seen.add(source_id)
+    return cited
+
+
+def _retrieve_chat_context(query: str) -> list[dict]:
+    """Retrieve chat-appropriate KB chunks for *query*.
+
+    Scoped to rule/faq/announcement types (mod_note intentionally excluded).
+    Chunks above the distance threshold are dropped so unrelated questions
+    return [] and the model falls back to "not sure" rather than hallucinating
+    a grounded answer from noise.
+
+    Returns [] on any retrieval error — chat degrades to ungrounded mode
+    gracefully rather than failing the whole request.
+    """
+    from config import settings  # lazy import
+    try:
+        chunks = retrieval_service.retrieve(
+            query,
+            source_types=_CHAT_RETRIEVAL_SOURCE_TYPES,
+            top_k=settings.CHAT_TOP_K,
+        )
+    except Exception:
+        logger.exception("Chat retrieval failed — falling back to ungrounded reply")
+        return []
+
+    threshold = settings.CHAT_RETRIEVAL_SCORE_THRESHOLD
+    return [c for c in chunks if c.get("distance", 1.0) <= threshold]
 
 
 def _make_session_id(guild_id: str, channel_id: str, user_id: str) -> str:
@@ -163,6 +283,18 @@ async def handle(
     )
 
     # ------------------------------------------------------------------
+    # 4b. Retrieve KB context (Chroma). Scoped to rule/faq/announcement;
+    # mod_note excluded so draft discipline reasoning and PII in mod notes
+    # never surfaces in user-facing chat replies. Chunks are sanitized +
+    # length-capped before injection so a poisoned KB row cannot use
+    # triple-bracket delimiters to escape the reference block.
+    # ------------------------------------------------------------------
+    retrieved_chunks = _retrieve_chat_context(safe_content)
+    reference_block = _build_reference_block(
+        retrieved_chunks, max_chars=settings.CHAT_REFERENCE_CHUNK_MAX_CHARS
+    )
+
+    # ------------------------------------------------------------------
     # 5. Assemble messages for the provider
     #
     # Historical turns are NOT re-wrapped — they're already in our trust
@@ -182,12 +314,19 @@ async def handle(
     messages.append({"role": "user", "content": wrapped_user_msg})
 
     # ------------------------------------------------------------------
-    # 6. Call provider
+    # 6. Call provider. Reference context is appended to the system prompt
+    # (not the user turn) so the model treats it as trusted operator-provided
+    # data parallel to the persona/identity lock, while the user turn stays
+    # in the untrusted-data envelope.
     # ------------------------------------------------------------------
+    system_prompt = get_system_prompt()
+    if reference_block:
+        system_prompt = f"{system_prompt}\n\n{reference_block}"
+
     response = await provider_service.call(
         "generate_chat_reply",
         messages=messages,
-        system_prompt=get_system_prompt(),
+        system_prompt=system_prompt,
         max_tokens=settings.CHAT_MODEL_MAX_TOKENS,
     )
 
@@ -243,13 +382,19 @@ async def handle(
     )
 
     # ------------------------------------------------------------------
+    # 9b. Resolve citations from retrieved chunks (never trust model output
+    # to produce source_ids — it will hallucinate).
+    # ------------------------------------------------------------------
+    citations = _resolve_citations(final_text, retrieved_chunks)
+
+    # ------------------------------------------------------------------
     # 10. Audit
     # ------------------------------------------------------------------
     await audit_service.log_interaction(
         task_type=TaskType.CHAT.value,
         input_text=safe_content,
         output_text=final_text,
-        citations=[],
+        citations=citations,
         provider_used=response.provider_name,
     )
 
@@ -285,6 +430,8 @@ async def handle(
         "injection_marker_seen": injection_marker_seen,
         "risky_output_marker_seen": risky_output_marker_seen,
         "classify_only_invoked": classify_only_invoked,
+        "retrieved_chunk_count": len(retrieved_chunks),
+        "cited_count": len(citations),
         "latency_ms": latency_ms,
     }
     logger.info(json.dumps(log_record))
@@ -307,4 +454,5 @@ async def handle(
         refusal=refusal,
         provider_used=response.provider_name,
         injection_marker_seen=injection_marker_seen,
+        citations=citations,
     )
