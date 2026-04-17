@@ -16,6 +16,17 @@ class AnthropicProvider(BaseLLMProvider):
         self._client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         self._model = settings.ANTHROPIC_MODEL
 
+    def _to_response(self, resp) -> ProviderResponse:
+        return ProviderResponse(
+            text=resp.content[0].text,
+            provider_name="anthropic",
+            model=self._model,
+            usage={
+                "input_tokens": resp.usage.input_tokens,
+                "output_tokens": resp.usage.output_tokens,
+            },
+        )
+
     # ------------------------------------------------------------------
     async def generate_grounded_answer(
         self,
@@ -38,15 +49,7 @@ class AnthropicProvider(BaseLLMProvider):
             temperature=0.3,
         )
 
-        return ProviderResponse(
-            text=resp.content[0].text,
-            provider_name="anthropic",
-            model=self._model,
-            usage={
-                "input_tokens": resp.usage.input_tokens,
-                "output_tokens": resp.usage.output_tokens,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_summary(
@@ -64,15 +67,7 @@ class AnthropicProvider(BaseLLMProvider):
             temperature=0.3,
         )
 
-        return ProviderResponse(
-            text=resp.content[0].text,
-            provider_name="anthropic",
-            model=self._model,
-            usage={
-                "input_tokens": resp.usage.input_tokens,
-                "output_tokens": resp.usage.output_tokens,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_mod_draft(
@@ -99,15 +94,7 @@ class AnthropicProvider(BaseLLMProvider):
             temperature=0.4,
         )
 
-        return ProviderResponse(
-            text=resp.content[0].text,
-            provider_name="anthropic",
-            model=self._model,
-            usage={
-                "input_tokens": resp.usage.input_tokens,
-                "output_tokens": resp.usage.output_tokens,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_moderation_analysis(
@@ -135,15 +122,7 @@ class AnthropicProvider(BaseLLMProvider):
             temperature=0.2,
         )
 
-        return ProviderResponse(
-            text=resp.content[0].text,
-            provider_name="anthropic",
-            model=self._model,
-            usage={
-                "input_tokens": resp.usage.input_tokens,
-                "output_tokens": resp.usage.output_tokens,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_chat_reply(
@@ -161,12 +140,4 @@ class AnthropicProvider(BaseLLMProvider):
             temperature=0.5,
         )
 
-        return ProviderResponse(
-            text=resp.content[0].text,
-            provider_name="anthropic",
-            model=self._model,
-            usage={
-                "input_tokens": resp.usage.input_tokens,
-                "output_tokens": resp.usage.output_tokens,
-            },
-        )
+        return self._to_response(resp)

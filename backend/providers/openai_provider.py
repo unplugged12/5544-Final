@@ -16,6 +16,17 @@ class OpenAIProvider(BaseLLMProvider):
         self._client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self._model = settings.OPENAI_MODEL
 
+    def _to_response(self, resp) -> ProviderResponse:
+        return ProviderResponse(
+            text=resp.choices[0].message.content or "",
+            provider_name="openai",
+            model=self._model,
+            usage={
+                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
+                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
+            },
+        )
+
     # ------------------------------------------------------------------
     async def generate_grounded_answer(
         self,
@@ -40,15 +51,7 @@ class OpenAIProvider(BaseLLMProvider):
             temperature=0.3,
         )
 
-        return ProviderResponse(
-            text=resp.choices[0].message.content or "",
-            provider_name="openai",
-            model=self._model,
-            usage={
-                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
-                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_summary(
@@ -67,15 +70,7 @@ class OpenAIProvider(BaseLLMProvider):
             temperature=0.3,
         )
 
-        return ProviderResponse(
-            text=resp.choices[0].message.content or "",
-            provider_name="openai",
-            model=self._model,
-            usage={
-                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
-                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_mod_draft(
@@ -102,15 +97,7 @@ class OpenAIProvider(BaseLLMProvider):
             temperature=0.4,
         )
 
-        return ProviderResponse(
-            text=resp.choices[0].message.content or "",
-            provider_name="openai",
-            model=self._model,
-            usage={
-                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
-                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_moderation_analysis(
@@ -138,15 +125,7 @@ class OpenAIProvider(BaseLLMProvider):
             response_format={"type": "json_object"},
         )
 
-        return ProviderResponse(
-            text=resp.choices[0].message.content or "",
-            provider_name="openai",
-            model=self._model,
-            usage={
-                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
-                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
-            },
-        )
+        return self._to_response(resp)
 
     # ------------------------------------------------------------------
     async def generate_chat_reply(
@@ -167,12 +146,4 @@ class OpenAIProvider(BaseLLMProvider):
             temperature=0.5,
         )
 
-        return ProviderResponse(
-            text=resp.choices[0].message.content or "",
-            provider_name="openai",
-            model=self._model,
-            usage={
-                "prompt_tokens": resp.usage.prompt_tokens if resp.usage else 0,
-                "completion_tokens": resp.usage.completion_tokens if resp.usage else 0,
-            },
-        )
+        return self._to_response(resp)

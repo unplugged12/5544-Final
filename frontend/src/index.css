@@ -63,12 +63,21 @@ button {
   font-size: inherit;
   cursor: pointer;
   border: none;
+}
+
+button:focus {
   outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.55;
+  filter: grayscale(30%);
 }
 
 input,

@@ -52,6 +52,20 @@
   overflow-y: auto;
 }
 
+.app__retry-btn {
+  padding: 8px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--color-primary);
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.app__retry-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
 .app__footer {
   grid-area: footer;
   display: flex;

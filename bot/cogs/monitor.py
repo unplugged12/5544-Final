@@ -13,11 +13,6 @@ from embeds import build_moderation_alert
 
 log = logging.getLogger(__name__)
 
-# Actions that warrant auto-deletion in demo mode
-AUTO_DELETE_ACTIONS = frozenset(
-    {"remove_message", "timeout_or_mute_recommendation", "escalate_to_human"}
-)
-
 # Per-user cooldown in seconds
 COOLDOWN_SECONDS = 5.0
 
@@ -78,11 +73,10 @@ class MonitorCog(commands.Cog):
         if data.get("suggested_action") == "no_action":
             return
 
-        # 3. Check demo mode
-        demo_mode = await client.get_demo_mode()
-
-        if demo_mode and data.get("suggested_action") in AUTO_DELETE_ACTIONS:
-            # Demo mode: auto-delete and alert
+        # 3. Backend already decided demo-mode action — trust the status field.
+        #    (moderation_service.analyze sets status=auto_actioned when demo_mode
+        #    is on AND the action is one of the auto-delete triggers.)
+        if data.get("status") == "auto_actioned":
             try:
                 await message.delete()
             except discord.Forbidden:

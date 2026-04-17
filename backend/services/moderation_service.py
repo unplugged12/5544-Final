@@ -17,20 +17,9 @@ from models.schemas import ModerationEventResponse
 from prompts.moderation_prompt import get_system_prompt
 from repositories import moderation_repo, settings_repo
 from services import audit_service, provider_service, retrieval_service
+from services.utils import parse_json_response
 
 logger = logging.getLogger(__name__)
-
-
-def _safe_parse_json(text: str) -> dict:
-    """Strip markdown fences and parse JSON.  Returns a dict or raises."""
-    cleaned = (
-        text.strip()
-        .removeprefix("```json")
-        .removeprefix("```")
-        .removesuffix("```")
-        .strip()
-    )
-    return json.loads(cleaned)
 
 
 @dataclass
@@ -69,7 +58,7 @@ async def _run_moderation_llm(text: str) -> ModerationLLMResult:
 
     # Parse JSON response
     try:
-        parsed = _safe_parse_json(result.text)
+        parsed = parse_json_response(result.text)
         violation_type = ViolationType(parsed.get("violation_type", "no_violation"))
         matched_rule = parsed.get("matched_rule")
         explanation = parsed.get("explanation", "")

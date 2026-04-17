@@ -79,6 +79,39 @@
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 12px;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.review-queue__card--busy {
+  opacity: 0.6;
+  filter: grayscale(30%);
+  pointer-events: none;
+}
+
+.review-queue__card--busy .review-queue__card-actions {
+  pointer-events: auto;
+}
+
+.review-queue__btn-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-queue__spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: review-queue-spin 0.8s linear infinite;
+}
+
+@keyframes review-queue-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .review-queue__card-top {
