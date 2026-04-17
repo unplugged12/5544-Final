@@ -20,6 +20,14 @@ logger = logging.getLogger(__name__)
 
 def _row_to_event(row: aiosqlite.Row) -> ModerationEventResponse:
     """Map a DB row to a ModerationEventResponse."""
+    # aiosqlite.Row supports keys() lookup; use .get-style with try/except to
+    # stay robust against old rows from before the discipline columns existed.
+    def _maybe(col: str) -> str | None:
+        try:
+            return row[col]
+        except (IndexError, KeyError):
+            return None
+
     return ModerationEventResponse(
         event_id=row["event_id"],
         message_content=row["message_content"],
@@ -33,6 +41,9 @@ def _row_to_event(row: aiosqlite.Row) -> ModerationEventResponse:
         created_at=row["created_at"],
         resolved_at=row["resolved_at"],
         resolved_by=row["resolved_by"],
+        discord_user_id=_maybe("discord_user_id"),
+        discord_guild_id=_maybe("discord_guild_id"),
+        discipline_action=_maybe("discipline_action"),
     )
 
 
@@ -47,6 +58,8 @@ async def create(
     suggested_action: SuggestedAction,
     status: ModerationStatus,
     source: EventSource,
+    discord_user_id: str | None = None,
+    discord_guild_id: str | None = None,
 ) -> ModerationEventResponse:
     """Insert a new moderation event and return it."""
     async with aiosqlite.connect(settings.SQLITE_PATH) as db:
@@ -57,8 +70,9 @@ async def create(
             """
             INSERT INTO moderation_events
                 (event_id, message_content, violation_type, matched_rule,
-                 explanation, severity, suggested_action, status, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 explanation, severity, suggested_action, status, source,
+                 discord_user_id, discord_guild_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 event_id,
@@ -70,6 +84,8 @@ async def create(
                 suggested_action.value,
                 status.value,
                 source.value,
+                discord_user_id,
+                discord_guild_id,
             ),
         )
         await db.commit()
@@ -79,6 +95,17 @@ async def create(
         )
         row = await cursor.fetchone()
         return _row_to_event(row)
+
+
+async def set_discipline_action(event_id: str, action: str) -> None:
+    """Persist the discipline-engine decision on the event row."""
+    async with aiosqlite.connect(settings.SQLITE_PATH) as db:
+        await db.execute("PRAGMA journal_mode=WAL")
+        await db.execute(
+            "UPDATE moderation_events SET discipline_action = ? WHERE event_id = ?",
+            (action, event_id),
+        )
+        await db.commit()
 
 
 async def get_by_id(event_id: str) -> ModerationEventResponse | None:

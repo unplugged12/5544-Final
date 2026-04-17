@@ -13,10 +13,15 @@ from models.enums import (
     TaskType,
     ViolationType,
 )
-from models.schemas import ModerationEventResponse
+from models.schemas import DisciplineDecisionPayload, ModerationEventResponse
 from prompts.moderation_prompt import get_system_prompt
 from repositories import moderation_repo, settings_repo
-from services import audit_service, provider_service, retrieval_service
+from services import (
+    audit_service,
+    discipline_service,
+    provider_service,
+    retrieval_service,
+)
 from services.utils import parse_json_response
 
 logger = logging.getLogger(__name__)
@@ -104,11 +109,16 @@ async def classify_only(text: str) -> ModerationLLMResult:
 async def analyze(
     message_content: str,
     source: EventSource,
+    *,
+    discord_user_id: str | None = None,
+    discord_guild_id: str | None = None,
 ) -> ModerationEventResponse:
-    """Run moderation analysis and persist the event.
+    """Run moderation analysis, persist the event, and return the decision.
 
-    Public API is unchanged — callers see the same ModerationEventResponse.
-    Internally the LLM call + JSON parse is now delegated to _run_moderation_llm.
+    Public API is extended (not broken) — callers that don't pass Discord
+    context still get a valid ModerationEventResponse, just without a
+    discipline_decision attached. Bot callers supply the Discord IDs so
+    the progressive-discipline engine can update the per-user ledger.
     """
     # 1-3. LLM call + parse (no persistence)
     llm_result = await _run_moderation_llm(message_content)
@@ -139,9 +149,33 @@ async def analyze(
         suggested_action=llm_result.suggested_action,
         status=status,
         source=source,
+        discord_user_id=discord_user_id,
+        discord_guild_id=discord_guild_id,
     )
 
-    # 6. Audit
+    # 6. Progressive discipline — only fires when the event is auto_actioned
+    # *and* we have Discord context to attribute it to. Dashboard-sourced
+    # /analyze calls from the Review Queue test box deliberately skip this.
+    decision_payload: DisciplineDecisionPayload | None = None
+    if (
+        status == ModerationStatus.AUTO_ACTIONED
+        and discord_user_id
+        and discord_guild_id
+    ):
+        decision = await discipline_service.decide_and_record(
+            event_id=event_id,
+            guild_id=discord_guild_id,
+            user_id=discord_user_id,
+            category=llm_result.violation_type.value,
+            severity=llm_result.severity,
+        )
+        await moderation_repo.set_discipline_action(event_id, decision.action.value)
+        event = event.model_copy(update={"discipline_action": decision.action})
+        decision_payload = DisciplineDecisionPayload(**decision.to_dict())
+
+    event = event.model_copy(update={"discipline_decision": decision_payload})
+
+    # 7. Audit
     await audit_service.log_interaction(
         task_type=TaskType.MODERATION.value,
         input_text=message_content,
