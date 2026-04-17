@@ -78,13 +78,15 @@
 }
 
 body {
-  position: relative;
   min-height: 100vh;
-  background-color: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  /* No background-color here: body is position:relative with z-index:auto, so
+     its bg paints in step 6 of the stacking order — on top of body::before
+     (z-index:-2). The aurora's fallback --color-bg in body::before's gradient
+     stack provides the dark base instead. */
 }
 
 /* Aurora / mesh background — behind all content, non-interactive.
@@ -97,9 +99,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(16, 185, 129, 0.28), transparent 60%),
-    radial-gradient(ellipse 55% 45% at 85% 90%, rgba(20, 184, 166, 0.20), transparent 60%),
-    radial-gradient(ellipse 40% 35% at 70% 20%, rgba(251, 191, 36, 0.10), transparent 65%),
+    radial-gradient(ellipse 70% 60% at 15% 10%, rgba(52, 211, 153, 0.55), transparent 70%),
+    radial-gradient(ellipse 65% 55% at 85% 90%, rgba(45, 212, 191, 0.42), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 70% 20%, rgba(251, 191, 36, 0.22), transparent 75%),
     var(--color-bg);
   animation: aurora-drift-a 18s var(--ease-standard) infinite alternate;
   will-change: transform, opacity;
@@ -112,8 +114,8 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 45% at 75% 30%, rgba(16, 185, 129, 0.14), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20, 184, 166, 0.12), transparent 70%);
+    radial-gradient(ellipse 60% 50% at 75% 30%, rgba(52, 211, 153, 0.28), transparent 75%),
+    radial-gradient(ellipse 55% 45% at 20% 80%, rgba(45, 212, 191, 0.24), transparent 75%);
   animation: aurora-drift-b 24s var(--ease-standard) infinite alternate;
   will-change: transform, opacity;
 }
