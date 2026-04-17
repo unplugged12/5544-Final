@@ -79,8 +79,6 @@
 
 .app__content {
   grid-area: content;
-  margin-top: var(--header-height);
-  margin-left: var(--sidebar-width);
   padding: 28px 32px;
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   overflow-y: auto;
