@@ -10,6 +10,11 @@
   color: var(--color-citation-text);
   cursor: default;
   white-space: nowrap;
+  outline: none;
+}
+
+.citation-badge:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-primary), 0 0 0 4px var(--color-bg);
 }
 
 .citation-tooltip {

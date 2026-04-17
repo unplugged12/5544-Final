@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   getHistory,
   analyzeMessage,
@@ -6,6 +7,7 @@ import {
   rejectEvent,
 } from "../api.js";
 import useApi from "../hooks/useApi.js";
+import useCountUp from "../hooks/useCountUp.js";
 import PromptInput from "./shared/PromptInput.jsx";
 import ResponsePanel from "./shared/ResponsePanel.jsx";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
@@ -13,11 +15,72 @@ import RuleMatchChip from "./shared/RuleMatchChip.jsx";
 import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ReviewQueue.css";
 
+// Brief checkmark animation shown over a card right before it fades out.
+// Stroke-dasharray draw-in over ~320ms. Pure SVG + CSS, no extra deps.
+function ConfirmOverlay({ variant }) {
+  const isApprove = variant === "approved";
+  const label = isApprove ? "Approved" : "Rejected";
+  return (
+    <motion.div
+      className={`review-queue__confirm review-queue__confirm--${variant}`}
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: [0, 0, 0.2, 1] }}
+      aria-hidden="true"
+    >
+      <svg
+        className="review-queue__confirm-icon"
+        viewBox="0 0 48 48"
+        width="48"
+        height="48"
+      >
+        <circle
+          className="review-queue__confirm-circle"
+          cx="24"
+          cy="24"
+          r="21"
+          fill="none"
+          strokeWidth="2.5"
+        />
+        {isApprove ? (
+          <path
+            className="review-queue__confirm-check"
+            d="M14 25 L21 32 L34 17"
+            fill="none"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ) : (
+          <g className="review-queue__confirm-check">
+            <path
+              d="M17 17 L31 31"
+              fill="none"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M31 17 L17 31"
+              fill="none"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+          </g>
+        )}
+      </svg>
+      <span className="review-queue__confirm-label">{label}</span>
+    </motion.div>
+  );
+}
+
 export default function ReviewQueue() {
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  // Map of eventId -> 'approved' | 'rejected' for the brief celebration overlay.
+  const [confirmedMap, setConfirmedMap] = useState({});
 
   const analyze = useApi(analyzeMessage);
 
@@ -38,29 +101,35 @@ export default function ReviewQueue() {
     fetchPending();
   }, [fetchPending]);
 
-  const handleApprove = async (eventId) => {
+  // Count-up for pending count (animates on mount only; subsequent changes snap).
+  const displayedPending = useCountUp(pendingEvents.length);
+
+  const runAction = async (eventId, variant, apiFn) => {
     setActionLoading(eventId);
     try {
-      await approveEvent(eventId);
+      await apiFn(eventId);
+      // Show the celebration overlay, let exit animation play, then refresh.
+      setConfirmedMap((m) => ({ ...m, [eventId]: variant }));
+      // ~600ms is enough for checkmark draw + fade; matches exit timing below.
+      await new Promise((resolve) => setTimeout(resolve, 620));
       await fetchPending();
+      setConfirmedMap((m) => {
+        const next = { ...m };
+        delete next[eventId];
+        return next;
+      });
     } catch (err) {
-      setError(err.message || "Failed to approve event");
+      setError(
+        err.message ||
+          `Failed to ${variant === "approved" ? "approve" : "reject"} event`
+      );
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleReject = async (eventId) => {
-    setActionLoading(eventId);
-    try {
-      await rejectEvent(eventId);
-      await fetchPending();
-    } catch (err) {
-      setError(err.message || "Failed to reject event");
-    } finally {
-      setActionLoading(null);
-    }
-  };
+  const handleApprove = (eventId) => runAction(eventId, "approved", approveEvent);
+  const handleReject = (eventId) => runAction(eventId, "rejected", rejectEvent);
 
   const handleAnalyze = (message) => {
     analyze.execute(message);
@@ -113,7 +182,8 @@ export default function ReviewQueue() {
 
       <div className="review-queue__pending-section">
         <h3 className="review-queue__section-title">
-          Pending Events ({pendingEvents.length})
+          Pending Events (
+          <span className="review-queue__count-num">{displayedPending}</span>)
         </h3>
 
         {error && <div className="review-queue__error">{error}</div>}
@@ -128,78 +198,99 @@ export default function ReviewQueue() {
           </div>
         )}
 
-        {!loading &&
-          pendingEvents.map((event) => {
-            const isBusy = actionLoading === event.event_id;
-            return (
-              <div
-                key={event.event_id}
-                className={`review-queue__card${
-                  isBusy ? " review-queue__card--busy" : ""
-                }`}
-                aria-busy={isBusy}
-              >
-                <div className="review-queue__card-top">
-                  <div className="review-queue__card-badges">
-                    <SeverityBadge level={event.severity} />
-                    <RuleMatchChip rule={event.matched_rule} />
+        {!loading && (
+          <AnimatePresence initial={false}>
+            {pendingEvents.map((event) => {
+              const isBusy = actionLoading === event.event_id;
+              const confirmedVariant = confirmedMap[event.event_id];
+              const isConfirming = Boolean(confirmedVariant);
+              return (
+                <motion.div
+                  key={event.event_id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{
+                    opacity: 0,
+                    y: -6,
+                    scale: 0.98,
+                    transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+                  }}
+                  transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
+                  className={`review-queue__card${
+                    isBusy ? " review-queue__card--busy" : ""
+                  }${isConfirming ? " review-queue__card--confirming" : ""}`}
+                  aria-busy={isBusy}
+                >
+                  <div className="review-queue__card-top">
+                    <div className="review-queue__card-badges">
+                      <SeverityBadge level={event.severity} />
+                      <RuleMatchChip rule={event.matched_rule} />
+                    </div>
+                    {event.suggested_action && (
+                      <span className="review-queue__suggested-action">
+                        Suggested: {formatEnumValue(event.suggested_action)}
+                      </span>
+                    )}
                   </div>
-                  {event.suggested_action && (
-                    <span className="review-queue__suggested-action">
-                      Suggested: {formatEnumValue(event.suggested_action)}
-                    </span>
+
+                  <div className="review-queue__card-message">
+                    {event.message_content}
+                  </div>
+
+                  {event.explanation && (
+                    <p className="review-queue__card-explanation">
+                      {event.explanation}
+                    </p>
                   )}
-                </div>
 
-                <div className="review-queue__card-message">
-                  {event.message_content}
-                </div>
+                  <div className="review-queue__card-actions">
+                    <button
+                      className="review-queue__approve-btn"
+                      onClick={() => handleApprove(event.event_id)}
+                      disabled={isBusy || isConfirming}
+                    >
+                      {isBusy && !isConfirming ? (
+                        <span className="review-queue__btn-busy">
+                          <span
+                            className="review-queue__spinner"
+                            aria-hidden="true"
+                          />
+                          Processing…
+                        </span>
+                      ) : (
+                        "Approve"
+                      )}
+                    </button>
+                    <button
+                      className="review-queue__reject-btn"
+                      onClick={() => handleReject(event.event_id)}
+                      disabled={isBusy || isConfirming}
+                    >
+                      {isBusy && !isConfirming ? (
+                        <span className="review-queue__btn-busy">
+                          <span
+                            className="review-queue__spinner"
+                            aria-hidden="true"
+                          />
+                          Processing…
+                        </span>
+                      ) : (
+                        "Reject"
+                      )}
+                    </button>
+                  </div>
 
-                {event.explanation && (
-                  <p className="review-queue__card-explanation">
-                    {event.explanation}
-                  </p>
-                )}
-
-                <div className="review-queue__card-actions">
-                  <button
-                    className="review-queue__approve-btn"
-                    onClick={() => handleApprove(event.event_id)}
-                    disabled={isBusy}
-                  >
-                    {isBusy ? (
-                      <span className="review-queue__btn-busy">
-                        <span
-                          className="review-queue__spinner"
-                          aria-hidden="true"
-                        />
-                        Processing…
-                      </span>
-                    ) : (
-                      "Approve"
+                  <AnimatePresence>
+                    {isConfirming && (
+                      <ConfirmOverlay variant={confirmedVariant} />
                     )}
-                  </button>
-                  <button
-                    className="review-queue__reject-btn"
-                    onClick={() => handleReject(event.event_id)}
-                    disabled={isBusy}
-                  >
-                    {isBusy ? (
-                      <span className="review-queue__btn-busy">
-                        <span
-                          className="review-queue__spinner"
-                          aria-hidden="true"
-                        />
-                        Processing…
-                      </span>
-                    ) : (
-                      "Reject"
-                    )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        )}
       </div>
     </div>
   );

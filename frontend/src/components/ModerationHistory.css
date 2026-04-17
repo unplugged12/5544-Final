@@ -20,6 +20,15 @@
   color: var(--color-text-muted);
 }
 
+.moderation-history__count-num {
+  display: inline-block;
+  min-width: 1.2em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
 .moderation-history__refresh-btn {
   padding: 8px 18px;
   font-size: 13px;
