@@ -107,7 +107,7 @@ cd data && pip install -r requirements.txt && python ingest.py && cd ..
 docker compose up --build
 
 # 4. Open the dashboard
-# http://localhost:5173
+# http://localhost:15173   (backend API at http://localhost:18000)
 ```
 
 **Without Docker** (local dev):

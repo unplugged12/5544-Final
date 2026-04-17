@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: copilot-backend
     ports:
-      - "8000:8000"
+      - "18000:8000"
     volumes:
       - ./data:/app/data
       - model-cache:/root/.cache
@@ -24,7 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: copilot-frontend
     ports:
-      - "5173:5173"
+      - "15173:5173"
     environment:
       - VITE_API_URL=
       - VITE_PROXY_TARGET=http://backend:8000
