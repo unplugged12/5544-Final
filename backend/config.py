@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     TOP_K_RESULTS: int = 5
 
     # CORS
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:15173"
 
     # Logging
     LOG_LEVEL: str = "INFO"
