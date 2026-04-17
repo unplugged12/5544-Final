@@ -123,6 +123,21 @@ def clear_sqlite(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+def _neutralize_kb_delimiters(text: str) -> str:
+    """Replace triple-ASCII-bracket sequences with visually-similar guillemets.
+
+    Defense-in-depth against poisoned seed data: the chat pipeline injects
+    retrieved KB chunks inside a <<<REFERENCE_CONTEXT>>> block and applies
+    the same neutralization at query time. Sanitizing at ingest means the
+    chunks stored in SQLite and Chroma are already safe — even if a future
+    code path forgets to re-sanitize, the stored rows cannot spoof the
+    reference delimiter. mirrors services.chat_guard.sanitize_input.
+    """
+    if not text:
+        return text
+    return text.replace("<<<", "\u2039\u2039\u2039").replace(">>>", "\u203A\u203A\u203A")
+
+
 def insert_item(conn: sqlite3.Connection, source_id: str, source_type: str,
                 title: str, content: str, category: str | None,
                 tags: list[str], citation_label: str) -> None:
@@ -131,8 +146,12 @@ def insert_item(conn: sqlite3.Connection, source_id: str, source_type: str,
         """INSERT INTO knowledge_items
            (source_id, source_type, title, content, category, tags, citation_label)
            VALUES (?, ?, ?, ?, ?, ?, ?);""",
-        (source_id, source_type, title, content, category,
-         json.dumps(tags), citation_label),
+        (source_id, source_type,
+         _neutralize_kb_delimiters(title),
+         _neutralize_kb_delimiters(content),
+         category,
+         json.dumps(tags),
+         _neutralize_kb_delimiters(citation_label)),
     )
 
 

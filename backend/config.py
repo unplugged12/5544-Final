@@ -39,6 +39,16 @@ class Settings(BaseSettings):
     CHAT_ALLOWED_URL_DOMAINS: str = "discord.com"
     CHAT_DAILY_TOKEN_BUDGET: int = 200000
 
+    # Chat-specific retrieval knobs. Kept separate from TOP_K_RESULTS (used by
+    # FAQ/moddraft) so chat can tune for a shorter 60-word reply without
+    # widening the FAQ retrieval budget. Score threshold is Chroma cosine
+    # distance — chunks with distance ABOVE this are dropped so unrelated
+    # questions return no context instead of noise the model can hallucinate
+    # a grounded-sounding answer from.
+    CHAT_TOP_K: int = 3
+    CHAT_RETRIEVAL_SCORE_THRESHOLD: float = 0.7
+    CHAT_REFERENCE_CHUNK_MAX_CHARS: int = 500
+
     # Observability (PR 7) — both must be overridden in production deployments.
     # The sentinel value "REPLACE_ME_WITH_SECRET" is intentional: it causes the
     # metrics endpoint to return 503 in any environment that hasn't been properly
