@@ -56,8 +56,11 @@
     0 1px 0 rgba(255, 255, 255, 0.05) inset,
     0 24px 48px -12px rgba(0, 0, 0, 0.4);
 
-  /* Gradient & glow — for accents / active pill / focus glow */
-  --gradient-primary: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  /* Gradient & glow — for accents / active pill / focus glow.
+     Uses emerald-700 → teal-700 (not the brighter -500 shades) so that
+     #ffffff text layered on top meets WCAG AA 4.5:1 contrast. The -500
+     pair measured 2.54:1 and failed AA for both text and non-text UI. */
+  --gradient-primary: linear-gradient(135deg, #047857 0%, #0f766e 100%);
   --gradient-accent: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(20, 184, 166, 0.7) 100%);
   --glow-primary: 0 0 0 1px rgba(16, 185, 129, 0.45), 0 6px 18px -6px rgba(16, 185, 129, 0.55);
 
