@@ -113,11 +113,6 @@ export default function ReviewQueue() {
       // ~600ms is enough for checkmark draw + fade; matches exit timing below.
       await new Promise((resolve) => setTimeout(resolve, 620));
       await fetchPending();
-      setConfirmedMap((m) => {
-        const next = { ...m };
-        delete next[eventId];
-        return next;
-      });
     } catch (err) {
       setError(
         err.message ||
@@ -125,6 +120,14 @@ export default function ReviewQueue() {
       );
     } finally {
       setActionLoading(null);
+      // Always clear the celebration flag — otherwise a throw after we set it
+      // leaves the card stuck with disabled action buttons (isConfirming=true).
+      setConfirmedMap((m) => {
+        if (!(eventId in m)) return m;
+        const next = { ...m };
+        delete next[eventId];
+        return next;
+      });
     }
   };
 
@@ -200,9 +203,12 @@ export default function ReviewQueue() {
           </div>
         )}
 
-        {!loading && (
-          <AnimatePresence initial={false}>
-            {pendingEvents.map((event) => {
+        {/* AnimatePresence must stay mounted across loading toggles, otherwise
+            the card exit transitions configured below never get to play when
+            approve/reject triggers a refetch (setLoading(true) would unmount
+            the whole tree instantly). */}
+        <AnimatePresence initial={false}>
+          {pendingEvents.map((event) => {
               const isBusy = actionLoading === event.event_id;
               const confirmedVariant = confirmedMap[event.event_id];
               const isConfirming = Boolean(confirmedVariant);
@@ -291,8 +297,7 @@ export default function ReviewQueue() {
                 </motion.div>
               );
             })}
-          </AnimatePresence>
-        )}
+        </AnimatePresence>
       </div>
     </div>
   );
