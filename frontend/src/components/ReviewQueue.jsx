@@ -135,8 +135,10 @@ export default function ReviewQueue() {
           Pending Events ({pendingEvents.length})
         </h3>
 
-        {/* error rendered via toast; keep a silent setter for future polish */}
-        {error && null}
+        {/* Toast notifies on failure but auto-dismisses after 5s. Persist an
+            inline banner so the pane isn't blank once the toast is gone
+            (empty/list views below are gated on !error). */}
+        {error && <div className="review-queue__error">{error}</div>}
 
         {loading && <ReviewQueueSkeleton />}
 

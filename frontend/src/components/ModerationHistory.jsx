@@ -146,8 +146,10 @@ export default function ModerationHistory() {
         ))}
       </div>
 
-      {/* errors are surfaced via toasts (see fetchHistory) */}
-      {error && null}
+      {/* Toast notifies on failure but auto-dismisses after 5s. Persist an
+          inline banner so the pane isn't a blank mystery once the toast is
+          gone (empty/list views below are gated on !error). */}
+      {error && <div className="moderation-history__error">{error}</div>}
 
       {loading && <SkeletonList rows={6} columns={6} />}
 
