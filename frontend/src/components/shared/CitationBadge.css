@@ -10,13 +10,28 @@
   color: var(--color-citation-text);
   cursor: default;
   white-space: nowrap;
+  outline: none;
 }
 
-.citation-tooltip {
+.citation-badge:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-primary), 0 0 0 4px var(--color-bg);
+}
+
+/* Wrapper owns the static position + centering translateX so that the inner
+   motion.span's inline transform (y slide) doesn't clobber the horizontal
+   centering. Motion writes transform: translateY(...) on the animated node,
+   which would override a class-based translateX(-50%) if they shared a node. */
+.citation-tooltip-wrapper {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.citation-tooltip {
+  display: block;
   background-color: var(--color-bg-card);
   color: var(--color-text);
   border: 1px solid var(--color-border);
@@ -28,7 +43,5 @@
   white-space: normal;
   width: max-content;
   max-width: 300px;
-  z-index: 100;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
 }

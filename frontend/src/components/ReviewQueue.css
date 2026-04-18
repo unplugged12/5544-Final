@@ -111,6 +111,120 @@
     0 8px 24px -12px rgba(16, 185, 129, 0.22);
 }
 
+.review-queue__card--confirming {
+  pointer-events: none;
+}
+
+.review-queue__count-num {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ---- Confirmation overlay (approve/reject celebration) ---- */
+
+.review-queue__confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  z-index: 2;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 33, 48, 0.78) 0%,
+    rgba(30, 33, 48, 0.92) 100%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.review-queue__confirm--approved {
+  box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.4);
+}
+
+.review-queue__confirm--rejected {
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.4);
+}
+
+.review-queue__confirm-icon {
+  overflow: visible;
+}
+
+.review-queue__confirm-circle {
+  stroke-dasharray: 132; /* ~circumference(r=21) */
+  stroke-dashoffset: 132;
+  animation: review-queue-draw-circle 360ms var(--ease-decelerate) forwards;
+}
+
+.review-queue__confirm-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: review-queue-draw-check 320ms var(--ease-decelerate) 180ms forwards;
+}
+
+.review-queue__confirm--approved .review-queue__confirm-circle,
+.review-queue__confirm--approved .review-queue__confirm-check,
+.review-queue__confirm--approved .review-queue__confirm-check * {
+  stroke: #34d399;
+}
+
+.review-queue__confirm--rejected .review-queue__confirm-circle,
+.review-queue__confirm--rejected .review-queue__confirm-check,
+.review-queue__confirm--rejected .review-queue__confirm-check * {
+  stroke: #f87171;
+}
+
+.review-queue__confirm-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  opacity: 0;
+  animation: review-queue-label-in 240ms var(--ease-decelerate) 340ms forwards;
+}
+
+.review-queue__confirm--approved .review-queue__confirm-label {
+  color: #34d399;
+}
+
+.review-queue__confirm--rejected .review-queue__confirm-label {
+  color: #f87171;
+}
+
+@keyframes review-queue-draw-circle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes review-queue-draw-check {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes review-queue-label-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-queue__confirm-circle,
+  .review-queue__confirm-check,
+  .review-queue__confirm-label {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
 .review-queue__card--busy {
   opacity: 0.6;
   filter: grayscale(30%);

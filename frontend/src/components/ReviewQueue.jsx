@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   getHistory,
   analyzeMessage,
@@ -7,6 +7,7 @@ import {
   rejectEvent,
 } from "../api.js";
 import useApi from "../hooks/useApi.js";
+import useCountUp from "../hooks/useCountUp.js";
 import PromptInput from "./shared/PromptInput.jsx";
 import ResponsePanel from "./shared/ResponsePanel.jsx";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
@@ -15,14 +16,72 @@ import { useToasts, ToastContainer } from "./shared/Toast.jsx";
 import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ReviewQueue.css";
 
-// Cap animated cards so large queues render instantly past the fold.
-const MAX_STAGGERED = 12;
+// Brief checkmark animation shown over a card right before it fades out.
+// Stroke-dasharray draw-in over ~320ms. Pure SVG + CSS, no extra deps.
+function ConfirmOverlay({ variant }) {
+  const isApprove = variant === "approved";
+  const label = isApprove ? "Approved" : "Rejected";
+  return (
+    <motion.div
+      className={`review-queue__confirm review-queue__confirm--${variant}`}
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: [0, 0, 0.2, 1] }}
+      aria-hidden="true"
+    >
+      <svg
+        className="review-queue__confirm-icon"
+        viewBox="0 0 48 48"
+        width="48"
+        height="48"
+      >
+        <circle
+          className="review-queue__confirm-circle"
+          cx="24"
+          cy="24"
+          r="21"
+          fill="none"
+          strokeWidth="2.5"
+        />
+        {isApprove ? (
+          <path
+            className="review-queue__confirm-check"
+            d="M14 25 L21 32 L34 17"
+            fill="none"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ) : (
+          <g className="review-queue__confirm-check">
+            <path
+              d="M17 17 L31 31"
+              fill="none"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M31 17 L17 31"
+              fill="none"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+          </g>
+        )}
+      </svg>
+      <span className="review-queue__confirm-label">{label}</span>
+    </motion.div>
+  );
+}
 
 export default function ReviewQueue() {
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  // Map of eventId -> 'approved' | 'rejected' for the brief celebration overlay.
+  const [confirmedMap, setConfirmedMap] = useState({});
   const { toasts, push, dismiss } = useToasts();
 
   const analyze = useApi(analyzeMessage);
@@ -53,35 +112,43 @@ export default function ReviewQueue() {
     }
   }, [analyze.error, push]);
 
-  const handleApprove = async (eventId) => {
+  // Count-up for pending count (animates on mount only; subsequent changes snap).
+  const displayedPending = useCountUp(pendingEvents.length);
+
+  const runAction = async (eventId, variant, apiFn) => {
     setActionLoading(eventId);
     try {
-      await approveEvent(eventId);
-      push({ kind: "success", message: "Event approved." });
+      await apiFn(eventId);
+      push({
+        kind: "success",
+        message: variant === "approved" ? "Event approved." : "Event rejected.",
+      });
+      // Show the celebration overlay, let exit animation play, then refresh.
+      setConfirmedMap((m) => ({ ...m, [eventId]: variant }));
+      // ~600ms is enough for checkmark draw + fade; matches exit timing below.
+      await new Promise((resolve) => setTimeout(resolve, 620));
       await fetchPending();
     } catch (err) {
-      const msg = err.message || "Failed to approve event";
+      const msg =
+        err.message ||
+        `Failed to ${variant === "approved" ? "approve" : "reject"} event`;
       setError(msg);
       push({ kind: "error", message: msg });
     } finally {
       setActionLoading(null);
+      // Always clear the celebration flag — otherwise a throw after we set it
+      // leaves the card stuck with disabled action buttons (isConfirming=true).
+      setConfirmedMap((m) => {
+        if (!(eventId in m)) return m;
+        const next = { ...m };
+        delete next[eventId];
+        return next;
+      });
     }
   };
 
-  const handleReject = async (eventId) => {
-    setActionLoading(eventId);
-    try {
-      await rejectEvent(eventId);
-      push({ kind: "success", message: "Event rejected." });
-      await fetchPending();
-    } catch (err) {
-      const msg = err.message || "Failed to reject event";
-      setError(msg);
-      push({ kind: "error", message: msg });
-    } finally {
-      setActionLoading(null);
-    }
-  };
+  const handleApprove = (eventId) => runAction(eventId, "approved", approveEvent);
+  const handleReject = (eventId) => runAction(eventId, "rejected", rejectEvent);
 
   const handleAnalyze = (message) => {
     analyze.execute(message);
@@ -132,7 +199,10 @@ export default function ReviewQueue() {
 
       <div className="review-queue__pending-section">
         <h3 className="review-queue__section-title">
-          Pending Events ({pendingEvents.length})
+          Pending Events{" "}
+          <span className="review-queue__count-num">
+            ({displayedPending})
+          </span>
         </h3>
 
         {/* Toast notifies on failure but auto-dismisses after 5s. Persist an
@@ -148,30 +218,31 @@ export default function ReviewQueue() {
           </div>
         )}
 
-        {!loading &&
-          pendingEvents.map((event, index) => {
+        {/* AnimatePresence must stay mounted across loading toggles, otherwise
+            the card exit transitions configured below never get to play when
+            approve/reject triggers a refetch (setLoading(true) would unmount
+            the whole tree instantly). */}
+        <AnimatePresence initial={false}>
+          {pendingEvents.map((event) => {
             const isBusy = actionLoading === event.event_id;
-            const animated = index < MAX_STAGGERED;
+            const confirmedVariant = confirmedMap[event.event_id];
+            const isConfirming = Boolean(confirmedVariant);
             return (
               <motion.div
                 key={event.event_id}
-                initial={animated ? { opacity: 0, y: 10 } : false}
-                animate={
-                  animated
-                    ? {
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                          delay: index * 0.04,
-                          duration: 0.3,
-                          ease: [0, 0, 0.2, 1],
-                        },
-                      }
-                    : undefined
-                }
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{
+                  opacity: 0,
+                  y: -6,
+                  scale: 0.98,
+                  transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+                }}
+                transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
                 className={`review-queue__card${
                   isBusy ? " review-queue__card--busy" : ""
-                }`}
+                }${isConfirming ? " review-queue__card--confirming" : ""}`}
                 aria-busy={isBusy}
               >
                 <div className="review-queue__card-top">
@@ -200,15 +271,15 @@ export default function ReviewQueue() {
                   <button
                     className="review-queue__approve-btn"
                     onClick={() => handleApprove(event.event_id)}
-                    disabled={isBusy}
+                    disabled={isBusy || isConfirming}
                   >
-                    {isBusy ? (
+                    {isBusy && !isConfirming ? (
                       <span className="review-queue__btn-busy">
                         <span
                           className="review-queue__spinner"
                           aria-hidden="true"
                         />
-                        Processing&hellip;
+                        Processing…
                       </span>
                     ) : (
                       "Approve"
@@ -217,24 +288,31 @@ export default function ReviewQueue() {
                   <button
                     className="review-queue__reject-btn"
                     onClick={() => handleReject(event.event_id)}
-                    disabled={isBusy}
+                    disabled={isBusy || isConfirming}
                   >
-                    {isBusy ? (
+                    {isBusy && !isConfirming ? (
                       <span className="review-queue__btn-busy">
                         <span
                           className="review-queue__spinner"
                           aria-hidden="true"
                         />
-                        Processing&hellip;
+                        Processing…
                       </span>
                     ) : (
                       "Reject"
                     )}
                   </button>
                 </div>
+
+                <AnimatePresence>
+                  {isConfirming && (
+                    <ConfirmOverlay variant={confirmedVariant} />
+                  )}
+                </AnimatePresence>
               </motion.div>
             );
           })}
+        </AnimatePresence>
       </div>
     </div>
   );

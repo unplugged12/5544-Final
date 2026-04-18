@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getHistory, undoDisciplineForEvent } from "../api.js";
+import useCountUp from "../hooks/useCountUp.js";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
 import { SkeletonList } from "./shared/Skeleton.jsx";
@@ -76,6 +77,9 @@ export default function ModerationHistory() {
     fetchHistory();
   }, [fetchHistory]);
 
+  // Count-up for total (on mount only; subsequent changes snap)
+  const displayedTotal = useCountUp(total);
+
   const filteredEvents =
     activeFilter === "all"
       ? events
@@ -116,7 +120,11 @@ export default function ModerationHistory() {
             Browse past moderation events and their outcomes.
             {total > 0 && (
               <span className="moderation-history__count">
-                {" "}({total} total)
+                {" "}(
+                <span className="moderation-history__count-num">
+                  {displayedTotal}
+                </span>{" "}
+                total)
               </span>
             )}
           </p>
