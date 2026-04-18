@@ -1,11 +1,18 @@
+import { useEffect } from "react";
 import { summarize } from "../api.js";
 import useApi from "../hooks/useApi.js";
 import PromptInput from "./shared/PromptInput.jsx";
 import ResponsePanel from "./shared/ResponsePanel.jsx";
+import { useToasts, ToastContainer } from "./shared/Toast.jsx";
 import "./SummarizeAnnouncement.css";
 
 export default function SummarizeAnnouncement() {
   const { data, loading, error, execute } = useApi(summarize);
+  const { toasts, push, dismiss } = useToasts();
+
+  useEffect(() => {
+    if (error) push({ kind: "error", message: error });
+  }, [error, push]);
 
   const handleSubmit = (text) => {
     execute(text);
@@ -13,6 +20,7 @@ export default function SummarizeAnnouncement() {
 
   return (
     <div className="summarize-announcement">
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <h2 className="summarize-announcement__title">Summarize Announcement</h2>
       <p className="summarize-announcement__subtitle">
         Paste an announcement and get a concise summary with key points.
@@ -25,8 +33,6 @@ export default function SummarizeAnnouncement() {
         loading={loading}
         rows={6}
       />
-
-      {error && <div className="summarize-announcement__error">{error}</div>}
 
       <ResponsePanel response={data} />
     </div>

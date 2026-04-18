@@ -32,7 +32,14 @@ export default function PromptInput({
         type="submit"
         disabled={loading || !value.trim()}
       >
-        {loading ? "Processing..." : buttonLabel}
+        {loading ? (
+          <span className="prompt-input__btn-busy">
+            <span className="prompt-input__spinner" aria-hidden="true" />
+            Processing&hellip;
+          </span>
+        ) : (
+          buttonLabel
+        )}
       </button>
     </form>
   );
