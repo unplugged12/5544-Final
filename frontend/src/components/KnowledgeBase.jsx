@@ -167,15 +167,18 @@ export default function KnowledgeBase() {
         Browse server rules, FAQs, announcements, and moderator notes.
       </p>
 
-      <div className="knowledge-base__filters" role="tablist" aria-label="Filter by type">
+      <div
+        className="knowledge-base__filters"
+        role="group"
+        aria-label="Filter by type"
+      >
         {FILTERS.map((f) => {
           const isActive = activeFilter === f.key;
           return (
             <button
               key={f.key}
               type="button"
-              role="tab"
-              aria-selected={isActive}
+              aria-pressed={isActive}
               className={`knowledge-base__filter-btn${
                 isActive ? " knowledge-base__filter-btn--active" : ""
               }`}
