@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import {
   getHistory,
   analyzeMessage,
@@ -10,14 +11,19 @@ import PromptInput from "./shared/PromptInput.jsx";
 import ResponsePanel from "./shared/ResponsePanel.jsx";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
+import { useToasts, ToastContainer } from "./shared/Toast.jsx";
 import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ReviewQueue.css";
+
+// Cap animated cards so large queues render instantly past the fold.
+const MAX_STAGGERED = 12;
 
 export default function ReviewQueue() {
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const { toasts, push, dismiss } = useToasts();
 
   const analyze = useApi(analyzeMessage);
 
@@ -28,23 +34,35 @@ export default function ReviewQueue() {
       const result = await getHistory(200, 0, "pending");
       setPendingEvents(result.events || []);
     } catch (err) {
-      setError(err.message || "Failed to load review queue");
+      const msg = err.message || "Failed to load review queue";
+      setError(msg);
+      push({ kind: "error", message: msg });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [push]);
 
   useEffect(() => {
     fetchPending();
   }, [fetchPending]);
 
+  // Surface analyze API errors as toasts too (replaces inline error text).
+  useEffect(() => {
+    if (analyze.error) {
+      push({ kind: "error", message: analyze.error });
+    }
+  }, [analyze.error, push]);
+
   const handleApprove = async (eventId) => {
     setActionLoading(eventId);
     try {
       await approveEvent(eventId);
+      push({ kind: "success", message: "Event approved." });
       await fetchPending();
     } catch (err) {
-      setError(err.message || "Failed to approve event");
+      const msg = err.message || "Failed to approve event";
+      setError(msg);
+      push({ kind: "error", message: msg });
     } finally {
       setActionLoading(null);
     }
@@ -54,9 +72,12 @@ export default function ReviewQueue() {
     setActionLoading(eventId);
     try {
       await rejectEvent(eventId);
+      push({ kind: "success", message: "Event rejected." });
       await fetchPending();
     } catch (err) {
-      setError(err.message || "Failed to reject event");
+      const msg = err.message || "Failed to reject event";
+      setError(msg);
+      push({ kind: "error", message: msg });
     } finally {
       setActionLoading(null);
     }
@@ -68,6 +89,7 @@ export default function ReviewQueue() {
 
   return (
     <div className="review-queue">
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <div className="review-queue__header">
         <div>
           <h2 className="review-queue__title">Review Queue</h2>
@@ -92,9 +114,6 @@ export default function ReviewQueue() {
           onSubmit={handleAnalyze}
           loading={analyze.loading}
         />
-        {analyze.error && (
-          <div className="review-queue__error">{analyze.error}</div>
-        )}
         {analyze.data && (
           <div className="review-queue__analyze-result">
             <ResponsePanel
@@ -116,11 +135,10 @@ export default function ReviewQueue() {
           Pending Events ({pendingEvents.length})
         </h3>
 
-        {error && <div className="review-queue__error">{error}</div>}
+        {/* error rendered via toast; keep a silent setter for future polish */}
+        {error && null}
 
-        {loading && (
-          <div className="review-queue__loading">Loading queue...</div>
-        )}
+        {loading && <ReviewQueueSkeleton />}
 
         {!loading && !error && pendingEvents.length === 0 && (
           <div className="review-queue__empty">
@@ -129,11 +147,26 @@ export default function ReviewQueue() {
         )}
 
         {!loading &&
-          pendingEvents.map((event) => {
+          pendingEvents.map((event, index) => {
             const isBusy = actionLoading === event.event_id;
+            const animated = index < MAX_STAGGERED;
             return (
-              <div
+              <motion.div
                 key={event.event_id}
+                initial={animated ? { opacity: 0, y: 10 } : false}
+                animate={
+                  animated
+                    ? {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          delay: index * 0.04,
+                          duration: 0.3,
+                          ease: [0, 0, 0.2, 1],
+                        },
+                      }
+                    : undefined
+                }
                 className={`review-queue__card${
                   isBusy ? " review-queue__card--busy" : ""
                 }`}
@@ -173,7 +206,7 @@ export default function ReviewQueue() {
                           className="review-queue__spinner"
                           aria-hidden="true"
                         />
-                        Processing…
+                        Processing&hellip;
                       </span>
                     ) : (
                       "Approve"
@@ -190,17 +223,41 @@ export default function ReviewQueue() {
                           className="review-queue__spinner"
                           aria-hidden="true"
                         />
-                        Processing…
+                        Processing&hellip;
                       </span>
                     ) : (
                       "Reject"
                     )}
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
       </div>
+    </div>
+  );
+}
+
+function ReviewQueueSkeleton() {
+  return (
+    <div className="review-queue__skeleton" aria-hidden="true">
+      {Array.from({ length: 3 }, (_, i) => (
+        <div key={i} className="review-queue__card review-queue__card--skeleton">
+          <div className="review-queue__card-top">
+            <span className="skeleton" style={{ width: 80, height: 18, borderRadius: 12 }} />
+            <span className="skeleton" style={{ width: 120, height: 14 }} />
+          </div>
+          <span
+            className="skeleton"
+            style={{ width: "100%", height: 48, borderRadius: 6, marginBottom: 8 }}
+          />
+          <span className="skeleton" style={{ width: "75%", height: 12, marginBottom: 12 }} />
+          <div className="review-queue__card-actions">
+            <span className="skeleton" style={{ width: 90, height: 32, borderRadius: 6 }} />
+            <span className="skeleton" style={{ width: 90, height: 32, borderRadius: 6 }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
