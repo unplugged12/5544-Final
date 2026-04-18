@@ -3,6 +3,8 @@ import { getHistory, undoDisciplineForEvent } from "../api.js";
 import useCountUp from "../hooks/useCountUp.js";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
+import { SkeletonList } from "./shared/Skeleton.jsx";
+import { useToasts, ToastContainer } from "./shared/Toast.jsx";
 import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ModerationHistory.css";
 
@@ -53,6 +55,7 @@ export default function ModerationHistory() {
   const [expandedId, setExpandedId] = useState(null);
   const [undoing, setUndoing] = useState(null);
   const [undoMsg, setUndoMsg] = useState({});
+  const { toasts, push, dismiss } = useToasts();
 
   const fetchHistory = useCallback(async () => {
     setLoading(true);
@@ -62,11 +65,13 @@ export default function ModerationHistory() {
       setEvents(result.events || []);
       setTotal(result.total || 0);
     } catch (err) {
-      setError(err.message || "Failed to load history");
+      const msg = err.message || "Failed to load history";
+      setError(msg);
+      push({ kind: "error", message: msg });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [push]);
 
   useEffect(() => {
     fetchHistory();
@@ -93,13 +98,13 @@ export default function ModerationHistory() {
         ? `Undo: ${res.reason}`
         : `Undone (${res.violations_revoked ?? 0} violations revoked, ${res.actions_marked_undone ?? 0} actions marked)`;
       setUndoMsg((m) => ({ ...m, [eventId]: msg }));
+      push({ kind: res.reason ? "warning" : "success", message: msg });
       // Refresh to pick up any backend-side state changes
       fetchHistory();
     } catch (err) {
-      setUndoMsg((m) => ({
-        ...m,
-        [eventId]: err.message || "Undo failed",
-      }));
+      const msg = err.message || "Undo failed";
+      setUndoMsg((m) => ({ ...m, [eventId]: msg }));
+      push({ kind: "error", message: msg });
     } finally {
       setUndoing(null);
     }
@@ -107,6 +112,7 @@ export default function ModerationHistory() {
 
   return (
     <div className="moderation-history">
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <div className="moderation-history__header">
         <div>
           <h2 className="moderation-history__title">Moderation History</h2>
@@ -148,11 +154,12 @@ export default function ModerationHistory() {
         ))}
       </div>
 
+      {/* Toast notifies on failure but auto-dismisses after 5s. Persist an
+          inline banner so the pane isn't a blank mystery once the toast is
+          gone (empty/list views below are gated on !error). */}
       {error && <div className="moderation-history__error">{error}</div>}
 
-      {loading && (
-        <div className="moderation-history__loading">Loading history...</div>
-      )}
+      {loading && <SkeletonList rows={6} columns={6} />}
 
       {!loading && !error && filteredEvents.length === 0 && (
         <div className="moderation-history__empty">No events found.</div>

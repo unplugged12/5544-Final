@@ -24,13 +24,21 @@
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-spring);
   flex-shrink: 0;
 }
 
 .review-queue__refresh-btn:hover:not(:disabled) {
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+.review-queue__refresh-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .review-queue__analyze-section {
@@ -75,12 +83,32 @@
 
 .review-queue__card {
   position: relative;
-  background-color: var(--color-bg-card);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 40%),
+    var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 16px;
   margin-bottom: 12px;
-  transition: opacity 0.2s ease, filter 0.2s ease;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 24px -16px rgba(0, 0, 0, 0.55);
+  transition:
+    opacity var(--dur-base) var(--ease-standard),
+    filter var(--dur-base) var(--ease-standard),
+    transform var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard);
+}
+
+.review-queue__card:hover:not([aria-busy="true"]) {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 14px 32px -16px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(16, 185, 129, 0.18),
+    0 8px 24px -12px rgba(16, 185, 129, 0.22);
 }
 
 .review-queue__card--confirming {
@@ -284,18 +312,35 @@
   border-radius: 6px;
   border: none;
   color: #ffffff;
-  transition: opacity 0.2s ease;
+  cursor: pointer;
+  transition:
+    filter var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-base) var(--ease-standard);
 }
 
 .review-queue__approve-btn {
   background-color: var(--color-approved);
+  box-shadow: 0 4px 12px -6px rgba(22, 163, 74, 0.55);
 }
 
 .review-queue__reject-btn {
   background-color: var(--color-rejected);
+  box-shadow: 0 4px 12px -6px rgba(239, 68, 68, 0.55);
 }
 
 .review-queue__approve-btn:hover:not(:disabled),
 .review-queue__reject-btn:hover:not(:disabled) {
-  opacity: 0.85;
+  filter: brightness(1.1);
+}
+
+.review-queue__approve-btn:active:not(:disabled),
+.review-queue__reject-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.review-queue__approve-btn:disabled,
+.review-queue__reject-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

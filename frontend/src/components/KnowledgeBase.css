@@ -18,6 +18,7 @@
 }
 
 .knowledge-base__filter-btn {
+  position: relative;
   padding: 6px 16px;
   font-size: 13px;
   font-weight: 500;
@@ -25,7 +26,11 @@
   background-color: var(--color-bg-secondary);
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
-  transition: all 0.2s ease;
+  transition:
+    color var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard);
+  isolation: isolate;
+  overflow: hidden;
 }
 
 .knowledge-base__filter-btn:hover {
@@ -34,15 +39,23 @@
 }
 
 .knowledge-base__filter-btn--active {
-  background-color: var(--color-primary);
   color: #ffffff;
-  border-color: var(--color-primary);
+  border-color: rgba(16, 185, 129, 0.65);
 }
 
-.knowledge-base__filter-btn--active:hover {
-  background-color: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
-  color: #ffffff;
+/* Motion layoutId pill sits behind the label */
+.knowledge-base__filter-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: var(--gradient-primary);
+  box-shadow: 0 6px 14px -6px rgba(16, 185, 129, 0.6);
+  z-index: -1;
+}
+
+.knowledge-base__filter-label {
+  position: relative;
+  z-index: 1;
 }
 
 .knowledge-base__error {
@@ -54,7 +67,6 @@
   font-size: 13px;
 }
 
-.knowledge-base__loading,
 .knowledge-base__empty {
   text-align: center;
   padding: 40px;
@@ -66,18 +78,30 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
+  align-items: start;
 }
 
+.knowledge-base__card-wrap {
+  display: block;
+}
+
+/* Card is a <button>, so reset intrinsic button styles */
 .knowledge-base__card {
-  background-color: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   padding: 16px;
-  transition: border-color 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--color-text);
+  text-align: left;
 }
 
-.knowledge-base__card:hover {
-  border-color: var(--color-primary);
+.knowledge-base__card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .knowledge-base__card-header {
@@ -85,7 +109,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .knowledge-base__card-title {
@@ -108,22 +131,22 @@
 }
 
 .knowledge-base__type-badge--rule {
-  background-color: rgba(99, 102, 241, 0.15);
+  background-color: rgba(16, 185, 129, 0.16);
   color: var(--color-primary);
 }
 
 .knowledge-base__type-badge--faq {
-  background-color: rgba(59, 130, 246, 0.15);
+  background-color: rgba(59, 130, 246, 0.16);
   color: var(--color-severity-low);
 }
 
 .knowledge-base__type-badge--announcement {
-  background-color: rgba(234, 179, 8, 0.15);
+  background-color: rgba(234, 179, 8, 0.16);
   color: var(--color-severity-medium);
 }
 
 .knowledge-base__type-badge--mod_note {
-  background-color: rgba(249, 115, 22, 0.15);
+  background-color: rgba(249, 115, 22, 0.16);
   color: var(--color-severity-high);
 }
 
@@ -131,7 +154,34 @@
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-text-muted);
-  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Expanded full content. Preserves newlines from KB seeds. */
+.knowledge-base__card-full {
+  display: block;
+  overflow: hidden;
+}
+
+.knowledge-base__card-full-inner {
+  display: block;
+  padding-top: 4px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.knowledge-base__card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .knowledge-base__card-id {
@@ -139,4 +189,25 @@
   color: var(--color-text-muted);
   font-family: monospace;
   opacity: 0.7;
+}
+
+.knowledge-base__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  transition: transform var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard);
+}
+
+.knowledge-base__chevron--open {
+  transform: rotate(90deg);
+  color: var(--color-primary);
+}
+
+.knowledge-base__card--expanded {
+  border-color: rgba(16, 185, 129, 0.45) !important;
 }

@@ -12,6 +12,7 @@ import PromptInput from "./shared/PromptInput.jsx";
 import ResponsePanel from "./shared/ResponsePanel.jsx";
 import SeverityBadge from "./shared/SeverityBadge.jsx";
 import RuleMatchChip from "./shared/RuleMatchChip.jsx";
+import { useToasts, ToastContainer } from "./shared/Toast.jsx";
 import { formatEnumValue } from "../utils/formatEnum.js";
 import "./ReviewQueue.css";
 
@@ -81,6 +82,7 @@ export default function ReviewQueue() {
   const [actionLoading, setActionLoading] = useState(null);
   // Map of eventId -> 'approved' | 'rejected' for the brief celebration overlay.
   const [confirmedMap, setConfirmedMap] = useState({});
+  const { toasts, push, dismiss } = useToasts();
 
   const analyze = useApi(analyzeMessage);
 
@@ -91,15 +93,24 @@ export default function ReviewQueue() {
       const result = await getHistory(200, 0, "pending");
       setPendingEvents(result.events || []);
     } catch (err) {
-      setError(err.message || "Failed to load review queue");
+      const msg = err.message || "Failed to load review queue";
+      setError(msg);
+      push({ kind: "error", message: msg });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [push]);
 
   useEffect(() => {
     fetchPending();
   }, [fetchPending]);
+
+  // Surface analyze API errors as toasts too (replaces inline error text).
+  useEffect(() => {
+    if (analyze.error) {
+      push({ kind: "error", message: analyze.error });
+    }
+  }, [analyze.error, push]);
 
   // Count-up for pending count (animates on mount only; subsequent changes snap).
   const displayedPending = useCountUp(pendingEvents.length);
@@ -108,16 +119,21 @@ export default function ReviewQueue() {
     setActionLoading(eventId);
     try {
       await apiFn(eventId);
+      push({
+        kind: "success",
+        message: variant === "approved" ? "Event approved." : "Event rejected.",
+      });
       // Show the celebration overlay, let exit animation play, then refresh.
       setConfirmedMap((m) => ({ ...m, [eventId]: variant }));
       // ~600ms is enough for checkmark draw + fade; matches exit timing below.
       await new Promise((resolve) => setTimeout(resolve, 620));
       await fetchPending();
     } catch (err) {
-      setError(
+      const msg =
         err.message ||
-          `Failed to ${variant === "approved" ? "approve" : "reject"} event`
-      );
+        `Failed to ${variant === "approved" ? "approve" : "reject"} event`;
+      setError(msg);
+      push({ kind: "error", message: msg });
     } finally {
       setActionLoading(null);
       // Always clear the celebration flag — otherwise a throw after we set it
@@ -140,6 +156,7 @@ export default function ReviewQueue() {
 
   return (
     <div className="review-queue">
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <div className="review-queue__header">
         <div>
           <h2 className="review-queue__title">Review Queue</h2>
@@ -164,9 +181,6 @@ export default function ReviewQueue() {
           onSubmit={handleAnalyze}
           loading={analyze.loading}
         />
-        {analyze.error && (
-          <div className="review-queue__error">{analyze.error}</div>
-        )}
         {analyze.data && (
           <div className="review-queue__analyze-result">
             <ResponsePanel
@@ -191,11 +205,12 @@ export default function ReviewQueue() {
           </span>
         </h3>
 
+        {/* Toast notifies on failure but auto-dismisses after 5s. Persist an
+            inline banner so the pane isn't blank once the toast is gone
+            (empty/list views below are gated on !error). */}
         {error && <div className="review-queue__error">{error}</div>}
 
-        {loading && (
-          <div className="review-queue__loading">Loading queue...</div>
-        )}
+        {loading && <ReviewQueueSkeleton />}
 
         {!loading && !error && pendingEvents.length === 0 && (
           <div className="review-queue__empty">
@@ -209,96 +224,120 @@ export default function ReviewQueue() {
             the whole tree instantly). */}
         <AnimatePresence initial={false}>
           {pendingEvents.map((event) => {
-              const isBusy = actionLoading === event.event_id;
-              const confirmedVariant = confirmedMap[event.event_id];
-              const isConfirming = Boolean(confirmedVariant);
-              return (
-                <motion.div
-                  key={event.event_id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{
-                    opacity: 0,
-                    y: -6,
-                    scale: 0.98,
-                    transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
-                  }}
-                  transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
-                  className={`review-queue__card${
-                    isBusy ? " review-queue__card--busy" : ""
-                  }${isConfirming ? " review-queue__card--confirming" : ""}`}
-                  aria-busy={isBusy}
-                >
-                  <div className="review-queue__card-top">
-                    <div className="review-queue__card-badges">
-                      <SeverityBadge level={event.severity} />
-                      <RuleMatchChip rule={event.matched_rule} />
-                    </div>
-                    {event.suggested_action && (
-                      <span className="review-queue__suggested-action">
-                        Suggested: {formatEnumValue(event.suggested_action)}
-                      </span>
-                    )}
+            const isBusy = actionLoading === event.event_id;
+            const confirmedVariant = confirmedMap[event.event_id];
+            const isConfirming = Boolean(confirmedVariant);
+            return (
+              <motion.div
+                key={event.event_id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{
+                  opacity: 0,
+                  y: -6,
+                  scale: 0.98,
+                  transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+                }}
+                transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
+                className={`review-queue__card${
+                  isBusy ? " review-queue__card--busy" : ""
+                }${isConfirming ? " review-queue__card--confirming" : ""}`}
+                aria-busy={isBusy}
+              >
+                <div className="review-queue__card-top">
+                  <div className="review-queue__card-badges">
+                    <SeverityBadge level={event.severity} />
+                    <RuleMatchChip rule={event.matched_rule} />
                   </div>
-
-                  <div className="review-queue__card-message">
-                    {event.message_content}
-                  </div>
-
-                  {event.explanation && (
-                    <p className="review-queue__card-explanation">
-                      {event.explanation}
-                    </p>
+                  {event.suggested_action && (
+                    <span className="review-queue__suggested-action">
+                      Suggested: {formatEnumValue(event.suggested_action)}
+                    </span>
                   )}
+                </div>
 
-                  <div className="review-queue__card-actions">
-                    <button
-                      className="review-queue__approve-btn"
-                      onClick={() => handleApprove(event.event_id)}
-                      disabled={isBusy || isConfirming}
-                    >
-                      {isBusy && !isConfirming ? (
-                        <span className="review-queue__btn-busy">
-                          <span
-                            className="review-queue__spinner"
-                            aria-hidden="true"
-                          />
-                          Processing…
-                        </span>
-                      ) : (
-                        "Approve"
-                      )}
-                    </button>
-                    <button
-                      className="review-queue__reject-btn"
-                      onClick={() => handleReject(event.event_id)}
-                      disabled={isBusy || isConfirming}
-                    >
-                      {isBusy && !isConfirming ? (
-                        <span className="review-queue__btn-busy">
-                          <span
-                            className="review-queue__spinner"
-                            aria-hidden="true"
-                          />
-                          Processing…
-                        </span>
-                      ) : (
-                        "Reject"
-                      )}
-                    </button>
-                  </div>
+                <div className="review-queue__card-message">
+                  {event.message_content}
+                </div>
 
-                  <AnimatePresence>
-                    {isConfirming && (
-                      <ConfirmOverlay variant={confirmedVariant} />
+                {event.explanation && (
+                  <p className="review-queue__card-explanation">
+                    {event.explanation}
+                  </p>
+                )}
+
+                <div className="review-queue__card-actions">
+                  <button
+                    className="review-queue__approve-btn"
+                    onClick={() => handleApprove(event.event_id)}
+                    disabled={isBusy || isConfirming}
+                  >
+                    {isBusy && !isConfirming ? (
+                      <span className="review-queue__btn-busy">
+                        <span
+                          className="review-queue__spinner"
+                          aria-hidden="true"
+                        />
+                        Processing…
+                      </span>
+                    ) : (
+                      "Approve"
                     )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
+                  </button>
+                  <button
+                    className="review-queue__reject-btn"
+                    onClick={() => handleReject(event.event_id)}
+                    disabled={isBusy || isConfirming}
+                  >
+                    {isBusy && !isConfirming ? (
+                      <span className="review-queue__btn-busy">
+                        <span
+                          className="review-queue__spinner"
+                          aria-hidden="true"
+                        />
+                        Processing…
+                      </span>
+                    ) : (
+                      "Reject"
+                    )}
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {isConfirming && (
+                    <ConfirmOverlay variant={confirmedVariant} />
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
+    </div>
+  );
+}
+
+function ReviewQueueSkeleton() {
+  return (
+    <div className="review-queue__skeleton" aria-hidden="true">
+      {Array.from({ length: 3 }, (_, i) => (
+        <div key={i} className="review-queue__card review-queue__card--skeleton">
+          <div className="review-queue__card-top">
+            <span className="skeleton" style={{ width: 80, height: 18, borderRadius: 12 }} />
+            <span className="skeleton" style={{ width: 120, height: 14 }} />
+          </div>
+          <span
+            className="skeleton"
+            style={{ width: "100%", height: 48, borderRadius: 6, marginBottom: 8 }}
+          />
+          <span className="skeleton" style={{ width: "75%", height: 12, marginBottom: 12 }} />
+          <div className="review-queue__card-actions">
+            <span className="skeleton" style={{ width: 90, height: 32, borderRadius: 6 }} />
+            <span className="skeleton" style={{ width: 90, height: 32, borderRadius: 6 }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
