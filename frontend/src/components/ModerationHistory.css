@@ -28,13 +28,21 @@
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-spring);
   flex-shrink: 0;
 }
 
 .moderation-history__refresh-btn:hover:not(:disabled) {
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+.moderation-history__refresh-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .moderation-history__filters {
@@ -52,7 +60,12 @@
   background-color: var(--color-bg-secondary);
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition:
+    color var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard),
+    background-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard);
 }
 
 .moderation-history__filter-btn:hover {
@@ -61,14 +74,14 @@
 }
 
 .moderation-history__filter-btn--active {
-  background-color: var(--color-primary);
+  background: var(--gradient-primary);
   color: #ffffff;
-  border-color: var(--color-primary);
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 6px 14px -6px rgba(16, 185, 129, 0.6);
 }
 
 .moderation-history__filter-btn--active:hover {
-  background-color: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  filter: brightness(1.08);
   color: #ffffff;
 }
 
@@ -91,8 +104,16 @@
 }
 
 .moderation-history__list {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0) 40%),
+    var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 24px -16px rgba(0, 0, 0, 0.55);
 }
 
 .moderation-history__table-header {
@@ -122,12 +143,16 @@
   border-bottom: 1px solid var(--color-border);
   font-size: 13px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard);
   align-items: center;
+  position: relative;
 }
 
 .moderation-history__row:hover {
-  background-color: var(--color-bg-secondary);
+  background-color: rgba(16, 185, 129, 0.06);
+  box-shadow: inset 3px 0 0 0 rgba(16, 185, 129, 0.55);
 }
 
 .moderation-history__row-group:last-child .moderation-history__row {
@@ -222,11 +247,17 @@
   border: 1px solid var(--color-severity-critical);
   border-radius: 6px;
   cursor: pointer;
-  transition: filter 150ms ease;
+  transition:
+    filter var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-spring);
 }
 
 .moderation-history__undo-btn:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(1.12);
+}
+
+.moderation-history__undo-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .moderation-history__undo-btn:disabled {

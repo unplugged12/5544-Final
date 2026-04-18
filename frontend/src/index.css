@@ -223,6 +223,158 @@ textarea {
   border-width: 0;
 }
 
+/* ============================================================
+   Shared card-glass base (Phase 2).
+   Use together with semantic component classes, e.g.
+   <div class="card-glass knowledge-base__card">.
+   - Subtle glass fill
+   - Inner top highlight + soft drop shadow
+   - Hover: translateY(-2px) + gradient border glow
+   ============================================================ */
+.card-glass {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 40%),
+    var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 24px -16px rgba(0, 0, 0, 0.55);
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard);
+}
+
+.card-glass:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 14px 32px -16px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(16, 185, 129, 0.18),
+    0 8px 24px -12px rgba(16, 185, 129, 0.22);
+}
+
+.card-glass:focus-within {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+/* Primary glass button — gradient fill, spring press */
+.btn-primary {
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    filter var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-base) var(--ease-standard);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 10px 24px -12px rgba(16, 185, 129, 0.6);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Secondary button — pill/outline variant */
+.btn-secondary {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-spring);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Animated gradient focus ring for text inputs.
+   Use by adding .input-glam to the <input>/<textarea>. */
+.input-glam {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  outline: none;
+  transition:
+    border-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard),
+    background-color var(--dur-base) var(--ease-standard);
+}
+
+.input-glam::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.input-glam:hover:not(:disabled):not(:focus) {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.input-glam:focus {
+  border-color: transparent;
+  background-color: var(--color-bg-secondary);
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.6),
+    0 0 0 4px rgba(16, 185, 129, 0.12),
+    0 6px 18px -8px rgba(16, 185, 129, 0.35);
+}
+
+.input-glam:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Skeleton loader (Phase 3) — pulsing rectangle */
+.skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.035) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.035) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: skeleton-shimmer 1.6s var(--ease-standard) infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Respect user motion preference globally.
    Motion components also honor this via <MotionConfig reducedMotion="user">. */
 @media (prefers-reduced-motion: reduce) {
