@@ -17,16 +17,18 @@ export default function CitationBadge({ label, snippet }) {
       {label}
       <AnimatePresence>
         {showTooltip && snippet && (
-          <motion.span
-            className="citation-tooltip"
-            role="tooltip"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0, 0, 0.2, 1] }}
-          >
-            {snippet}
-          </motion.span>
+          <span className="citation-tooltip-wrapper">
+            <motion.span
+              className="citation-tooltip"
+              role="tooltip"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18, ease: [0, 0, 0.2, 1] }}
+            >
+              {snippet}
+            </motion.span>
+          </span>
         )}
       </AnimatePresence>
     </span>
