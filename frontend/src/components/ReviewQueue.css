@@ -89,8 +89,6 @@
 
 .review-queue__count-num {
   display: inline-block;
-  min-width: 1.2em;
-  text-align: left;
   font-variant-numeric: tabular-nums;
   color: var(--color-primary);
   font-weight: 700;

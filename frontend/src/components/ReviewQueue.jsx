@@ -182,8 +182,10 @@ export default function ReviewQueue() {
 
       <div className="review-queue__pending-section">
         <h3 className="review-queue__section-title">
-          Pending Events (
-          <span className="review-queue__count-num">{displayedPending}</span>)
+          Pending Events{" "}
+          <span className="review-queue__count-num">
+            ({displayedPending})
+          </span>
         </h3>
 
         {error && <div className="review-queue__error">{error}</div>}
