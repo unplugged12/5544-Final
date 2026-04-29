@@ -11,6 +11,7 @@ import ReviewQueue from "./components/ReviewQueue.jsx";
 import ModerationHistory from "./components/ModerationHistory.jsx";
 import Settings from "./components/Settings.jsx";
 import "./App.css";
+import BattleBanner from "./components/shared/BattleBanner.jsx";
 
 function renderTab(activeTab) {
   switch (activeTab) {
@@ -56,8 +57,27 @@ function ConnectingSplash() {
   );
 }
 
+const BANNER_LABELS = {
+  knowledge: "Knowledge Base",
+  faq: "Ask FAQ",
+  summarize: "Summarize Announcement",
+  draft: "Moderator Draft",
+  review: "Review Queue",
+  history: "Moderation History",
+  settings: "Settings",
+};
+
+const ACTIVE_TAB_STORAGE_KEY = "esports-mod-copilot-active-tab";
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState("knowledge");
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const stored = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+      return Object.hasOwn(BANNER_LABELS, stored) ? stored : "knowledge";
+    } catch {
+      return "knowledge";
+    }
+  });
   const [demoMode, setDemoModeState] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("connecting"); // "connecting" | "connected" | "failed"
 
@@ -78,6 +98,14 @@ export default function App() {
     connect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+  try {
+    localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, activeTab);
+  } catch {
+    // ignore storage errors
+  }
+}, [activeTab]);
 
   const handleToggleDemo = async () => {
     const newMode = !demoMode;
@@ -128,6 +156,8 @@ export default function App() {
           <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
           <main className="app__content">
+            <BattleBanner pageName={BANNER_LABELS[activeTab] ?? "Knowledge Base"} />
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}

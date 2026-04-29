@@ -21,10 +21,7 @@ export default function AskFaq() {
   return (
     <div className="ask-faq">
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      <h2 className="ask-faq__title">Ask FAQ</h2>
-      <p className="ask-faq__subtitle">
-        Ask a question and get answers sourced from the knowledge base.
-      </p>
+      <h2 className="sr-only">Ask FAQ</h2>
 
       <PromptInput
         placeholder="Ask a question about server rules, policies, or FAQs..."

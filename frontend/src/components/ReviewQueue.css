@@ -5,16 +5,7 @@
   margin-bottom: 24px;
 }
 
-.review-queue__title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
 
-.review-queue__subtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
 
 .review-queue__refresh-btn {
   padding: 8px 18px;

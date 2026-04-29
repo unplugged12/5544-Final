@@ -159,10 +159,7 @@ export default function ReviewQueue() {
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <div className="review-queue__header">
         <div>
-          <h2 className="review-queue__title">Review Queue</h2>
-          <p className="review-queue__subtitle">
-            Analyze messages and review pending moderation events.
-          </p>
+          <h2 className="sr-only">Review Queue</h2>
         </div>
         <button
           className="review-queue__refresh-btn"

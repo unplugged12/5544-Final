@@ -44,10 +44,7 @@ export default function ModeratorDraft() {
   return (
     <div className="moderator-draft">
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      <h2 className="moderator-draft__title">Moderator Draft</h2>
-      <p className="moderator-draft__subtitle">
-        Describe a situation and get a drafted moderation response.
-      </p>
+      <h2 className="sr-only">Moderator Draft</h2>
 
       <PromptInput
         placeholder="Describe the moderation situation or paste the user's message..."

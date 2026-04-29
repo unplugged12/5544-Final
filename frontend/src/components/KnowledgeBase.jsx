@@ -19,7 +19,6 @@ const TYPE_LABELS = {
   mod_note: "Mod Note",
 };
 
-// Cap animated children so large lists don't feel slow.
 const MAX_STAGGERED = 12;
 
 function KbCard({ source, index, expanded, onToggle }) {
@@ -30,11 +29,14 @@ function KbCard({ source, index, expanded, onToggle }) {
         ? source.content.substring(0, 150) + "..."
         : source.content
       : "No content preview available.";
+
   const contentId = `kb-content-${source.source_id}`;
 
   const CardInner = (
-    <button
+    <motion.button
       type="button"
+      layout
+      transition={{ layout: { type: "spring", stiffness: 260, damping: 28 } }}
       className={`kb-card card-glass knowledge-base__card${
         expanded ? " knowledge-base__card--expanded" : ""
       }`}
@@ -53,9 +55,13 @@ function KbCard({ source, index, expanded, onToggle }) {
         </span>
       </span>
 
-      {!expanded && (
-        <span className="knowledge-base__card-preview">{preview}</span>
-      )}
+      <span
+        className={`knowledge-base__card-preview${
+          expanded ? " knowledge-base__card-preview--expanded" : ""
+        }`}
+      >
+        {preview}
+      </span>
 
       <AnimatePresence initial={false}>
         {expanded && (
@@ -65,16 +71,22 @@ function KbCard({ source, index, expanded, onToggle }) {
             className="knowledge-base__card-full"
             role="region"
             aria-label={`${source.title || source.source_id} content`}
-            initial={{ opacity: 0, height: 0 }}
+            initial={{ height: 0, opacity: 0 }}
             animate={{
-              opacity: 1,
               height: "auto",
-              transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
+              opacity: 1,
+              transition: {
+                height: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+                opacity: { duration: 0.2, delay: 0.06 },
+              },
             }}
             exit={{
-              opacity: 0,
               height: 0,
-              transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
+              opacity: 0,
+              transition: {
+                height: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+                opacity: { duration: 0.14 },
+              },
             }}
           >
             <span className="knowledge-base__card-full-inner">
@@ -95,12 +107,16 @@ function KbCard({ source, index, expanded, onToggle }) {
           ▸
         </span>
       </span>
-    </button>
+    </motion.button>
   );
 
   if (!shouldAnimate) {
     return (
-      <motion.div className="knowledge-base__card-wrap" layout>
+      <motion.div
+        className="knowledge-base__card-wrap"
+        layout
+        transition={{ layout: { type: "spring", stiffness: 260, damping: 28 } }}
+      >
         {CardInner}
       </motion.div>
     );
@@ -111,14 +127,11 @@ function KbCard({ source, index, expanded, onToggle }) {
       className="knowledge-base__card-wrap"
       layout
       initial={{ opacity: 0, y: 10 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: {
-          delay: index * 0.04,
-          duration: 0.32,
-          ease: [0, 0, 0.2, 1],
-        },
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        layout: { type: "spring", stiffness: 260, damping: 28 },
+        opacity: { delay: index * 0.04, duration: 0.32, ease: [0, 0, 0.2, 1] },
+        y: { delay: index * 0.04, duration: 0.32, ease: [0, 0, 0.2, 1] },
       }}
     >
       {CardInner}
@@ -149,7 +162,6 @@ export default function KnowledgeBase() {
 
   useEffect(() => {
     fetchSources(activeFilter);
-    // Collapse any open card when the filter changes (grid reshuffles)
     setExpandedId(null);
   }, [activeFilter]);
 
@@ -157,15 +169,11 @@ export default function KnowledgeBase() {
     setActiveFilter(key);
   };
 
-  // Stable ordering so Motion layout animations are smooth
   const orderedSources = useMemo(() => sources, [sources]);
 
   return (
     <div className="knowledge-base">
-      <h2 className="knowledge-base__title">Knowledge Base</h2>
-      <p className="knowledge-base__subtitle">
-        Browse server rules, FAQs, announcements, and moderator notes.
-      </p>
+      <h2 className="sr-only">Knowledge Base</h2>
 
       <div
         className="knowledge-base__filters"

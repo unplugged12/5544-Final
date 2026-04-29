@@ -103,7 +103,7 @@ export default function Settings() {
 
   return (
     <div className="settings">
-      <h2 className="settings__title">Settings</h2>
+      <h2 className="sr-only">Settings</h2>
 
       <div className="settings__section">
         <h3 className="settings__section-title">Demo Mode</h3>
