@@ -1,14 +1,4 @@
-.summarize-announcement__title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
 
-.summarize-announcement__subtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: 20px;
-}
 
 .summarize-announcement__error {
   margin-top: 12px;

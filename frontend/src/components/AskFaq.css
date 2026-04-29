@@ -1,14 +1,4 @@
-.ask-faq__title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
 
-.ask-faq__subtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: 20px;
-}
 
 .ask-faq__error {
   margin-top: 12px;
@@ -19,3 +9,4 @@
   color: var(--color-severity-critical);
   font-size: 13px;
 }
+

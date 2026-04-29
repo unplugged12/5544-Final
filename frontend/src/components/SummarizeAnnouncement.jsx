@@ -21,10 +21,7 @@ export default function SummarizeAnnouncement() {
   return (
     <div className="summarize-announcement">
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      <h2 className="summarize-announcement__title">Summarize Announcement</h2>
-      <p className="summarize-announcement__subtitle">
-        Paste an announcement and get a concise summary with key points.
-      </p>
+      
 
       <PromptInput
         placeholder="Paste the announcement text here..."

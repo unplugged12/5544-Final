@@ -5,16 +5,7 @@
   margin-bottom: 20px;
 }
 
-.moderation-history__title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
 
-.moderation-history__subtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
 
 .moderation-history__count {
   color: var(--color-text-muted);
