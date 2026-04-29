@@ -218,3 +218,88 @@
   font-size: 13px;
   letter-spacing: 0.01em;
 }
+
+/* ===== MW3-style header visual override only ===== */
+
+.app__header {
+  background:
+    linear-gradient(180deg, rgba(7, 11, 13, 0.96) 0%, rgba(10, 14, 18, 0.9) 100%);
+  border-bottom: 1px solid rgba(57, 255, 156, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 10px 24px -18px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+.app__header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(57, 255, 156, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 156, 0.014) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.12;
+}
+
+.app__header::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(57, 255, 156, 0.28) 20%,
+    rgba(57, 255, 156, 0.52) 50%,
+    rgba(57, 255, 156, 0.28) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.app__header-left,
+.app__header-right {
+  position: relative;
+  z-index: 1;
+}
+
+.app__header-right {
+  gap: 12px;
+}
+
+.app__title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #f2fff7 0%, #bfffdc 45%, #7dffbe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app__retry-btn {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f8fffb;
+  background: linear-gradient(180deg, rgba(12, 62, 42, 0.96) 0%, rgba(10, 41, 29, 0.96) 100%);
+  border: 1px solid rgba(57, 255, 156, 0.18);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(57, 255, 156, 0.05);
+}
+
+.app__retry-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  border-color: rgba(57, 255, 156, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(57, 255, 156, 0.08),
+    0 0 16px rgba(57, 255, 156, 0.12);
+}
