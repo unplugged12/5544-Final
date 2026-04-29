@@ -390,3 +390,81 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+:root {
+  --color-bg: #05080a;
+  --color-bg-secondary: #0c1116;
+  --color-bg-card: #111824;
+  --color-border: #1d2a35;
+
+  --color-primary: #39ff9c;
+  --color-primary-hover: #7dffbe;
+
+  --gradient-primary: linear-gradient(135deg, #0a5b41 0%, #0d7854 55%, #16a34a 100%);
+  --gradient-accent: linear-gradient(135deg, rgba(57, 255, 156, 0.92) 0%, rgba(16, 185, 129, 0.72) 100%);
+  --glow-primary:
+    0 0 0 1px rgba(57, 255, 156, 0.35),
+    0 0 18px rgba(57, 255, 156, 0.2),
+    0 0 36px rgba(16, 185, 129, 0.12);
+}
+
+body::before {
+  background:
+    radial-gradient(ellipse 72% 62% at 15% 10%, rgba(57, 255, 156, 0.22), transparent 72%),
+    radial-gradient(ellipse 64% 54% at 85% 90%, rgba(22, 163, 74, 0.18), transparent 72%),
+    radial-gradient(ellipse 50% 44% at 70% 20%, rgba(16, 185, 129, 0.12), transparent 75%),
+    linear-gradient(180deg, #040608 0%, #05080a 50%, #04070a 100%);
+  filter: saturate(120%) brightness(0.82);
+}
+
+body::after {
+  background:
+    radial-gradient(ellipse 60% 50% at 75% 30%, rgba(57, 255, 156, 0.14), transparent 75%),
+    radial-gradient(ellipse 55% 45% at 20% 80%, rgba(16, 185, 129, 0.12), transparent 75%);
+  filter: blur(6px) saturate(118%);
+  opacity: 0.88;
+}
+
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(rgba(57, 255, 156, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 156, 0.022) 1px, transparent 1px);
+  background-size: 42px 42px;
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  animation: mw3-grid-drift 22s linear infinite;
+}
+
+#root::after {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 44%,
+      rgba(57, 255, 156, 0.06) 50%,
+      transparent 56%,
+      transparent 100%
+    );
+  opacity: 0.4;
+  animation: mw3-scan-sweep 9s linear infinite;
+}
+
+@keyframes mw3-grid-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(42px, 42px, 0); }
+}
+
+@keyframes mw3-scan-sweep {
+  from { transform: translateX(-24%); }
+  to   { transform: translateX(24%); }
+}
