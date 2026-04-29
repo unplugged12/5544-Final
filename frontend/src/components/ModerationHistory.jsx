@@ -115,17 +115,16 @@ export default function ModerationHistory() {
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <div className="moderation-history__header">
         <div>
-          
-            {total > 0 && (
-              <span className="moderation-history__count">
-                {" "}(
-                <span className="moderation-history__count-num">
-                  {displayedTotal}
-                </span>{" "}
-                total)
-              </span>
-            )}
-          
+          <h2 className="sr-only">Moderation History</h2>
+          {total > 0 && (
+            <span className="moderation-history__count">
+              (
+              <span className="moderation-history__count-num">
+                {displayedTotal}
+              </span>{" "}
+              total)
+            </span>
+          )}
         </div>
         <button
           className="moderation-history__refresh-btn"

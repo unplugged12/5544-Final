@@ -173,6 +173,8 @@ export default function KnowledgeBase() {
 
   return (
     <div className="knowledge-base">
+      <h2 className="sr-only">Knowledge Base</h2>
+
       <div
         className="knowledge-base__filters"
         role="group"

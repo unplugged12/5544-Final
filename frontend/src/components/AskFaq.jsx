@@ -21,7 +21,7 @@ export default function AskFaq() {
   return (
     <div className="ask-faq">
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      
+      <h2 className="sr-only">Ask FAQ</h2>
 
       <PromptInput
         placeholder="Ask a question about server rules, policies, or FAQs..."

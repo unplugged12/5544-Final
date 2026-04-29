@@ -21,7 +21,7 @@ export default function SummarizeAnnouncement() {
   return (
     <div className="summarize-announcement">
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      
+      <h2 className="sr-only">Summarize Announcement</h2>
 
       <PromptInput
         placeholder="Paste the announcement text here..."
