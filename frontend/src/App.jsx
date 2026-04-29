@@ -71,12 +71,13 @@ const ACTIVE_TAB_STORAGE_KEY = "esports-mod-copilot-active-tab";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
-  try {
-    return localStorage.getItem(ACTIVE_TAB_STORAGE_KEY) || "knowledge";
-  } catch {
-    return "knowledge";
-  }
-});
+    try {
+      const stored = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+      return Object.hasOwn(BANNER_LABELS, stored) ? stored : "knowledge";
+    } catch {
+      return "knowledge";
+    }
+  });
   const [demoMode, setDemoModeState] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("connecting"); // "connecting" | "connected" | "failed"
 
