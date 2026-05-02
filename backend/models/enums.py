@@ -41,6 +41,15 @@ class ModerationStatus(str, Enum):
 
 
 class ViolationType(str, Enum):
+    # Note: this enum is narrower than the rule taxonomy in ``rules.json``.
+    # Rules 8 (account trading), 9 (cheating promo), and 13 (tournament
+    # misconduct) don't have dedicated enum values — they map to ``SPAM`` for
+    # action purposes while ``matched_rule`` carries the precise rule label.
+    # The eval dataset routes account-trading violations through ``spam``;
+    # ``test_toxic_messages.json`` (legacy) still uses string labels that
+    # don't validate against this enum but its tests check field presence
+    # only. Expanding this enum requires migrating both datasets and the
+    # progressive-discipline category mapping.
     SPAM = "spam"
     HARASSMENT = "harassment"
     HATE_SPEECH = "hate_speech"
