@@ -186,6 +186,7 @@ export default function ReviewQueue() {
                 severity: analyze.data.severity,
                 suggested_action: analyze.data.suggested_action,
                 matched_rule: analyze.data.matched_rule,
+                violation_type: analyze.data.violation_type,
                 citations: [],
                 confidence_note: null,
               }}
@@ -245,7 +246,10 @@ export default function ReviewQueue() {
                 <div className="review-queue__card-top">
                   <div className="review-queue__card-badges">
                     <SeverityBadge level={event.severity} />
-                    <RuleMatchChip rule={event.matched_rule} />
+                    <RuleMatchChip
+                      rule={event.matched_rule}
+                      violationType={event.violation_type}
+                    />
                   </div>
                   {event.suggested_action && (
                     <span className="review-queue__suggested-action">

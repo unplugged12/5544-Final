@@ -210,7 +210,10 @@ export default function ModerationHistory() {
                   </span>
                 </span>
                 <span className="moderation-history__col moderation-history__col--rule">
-                  <RuleMatchChip rule={event.matched_rule} />
+                  <RuleMatchChip
+                    rule={event.matched_rule}
+                    violationType={event.violation_type}
+                  />
                 </span>
                 <span className="moderation-history__col moderation-history__col--resolved">
                   {event.resolved_by || "--"}
