@@ -73,13 +73,47 @@ def _load_rule_reference_list() -> str:
     return "\n".join(lines)
 
 
+def _load_rule_label_to_source_id() -> dict[str, str]:
+    """Map every known rule reference (citation_label, title, source_id) to its
+    canonical ``source_id``. Used by the eval metrics path to normalise
+    predicted labels (LLM emits ``"Rule 6: Stay On Topic"``) and expected
+    labels (dataset stores ``"rule_006"``) before comparing.
+    """
+    out: dict[str, str] = {}
+    for rule in _load_rules_json().get("rules", []):
+        sid = rule.get("source_id")
+        if not sid:
+            continue
+        out[sid] = sid
+        for key in ("citation_label", "title"):
+            value = rule.get(key)
+            if value:
+                out[value] = sid
+    return out
+
+
 VALID_RULE_LABELS: set[str] = _load_valid_rule_labels()
 RULE_REFERENCE_LIST: str = _load_rule_reference_list()
+RULE_LABEL_TO_SOURCE_ID: dict[str, str] = _load_rule_label_to_source_id()
 logger.info(
-    "moderation.rules_loaded: %d valid rule labels, %d reference lines",
+    "moderation.rules_loaded: %d valid rule labels, %d reference lines, %d label aliases",
     len(VALID_RULE_LABELS),
     RULE_REFERENCE_LIST.count("\n") + 1 if RULE_REFERENCE_LIST else 0,
+    len(RULE_LABEL_TO_SOURCE_ID),
 )
+
+
+def canonical_rule_id(label: str | None) -> str | None:
+    """Return the canonical ``source_id`` for any rule reference, or ``None``.
+
+    Passes through unknown strings unchanged so confusion matrices preserve
+    visible information about hallucinated rule labels (rather than silently
+    collapsing them to None — that case is already handled upstream by the
+    matched_rule validator in moderation_service).
+    """
+    if not label:
+        return None
+    return RULE_LABEL_TO_SOURCE_ID.get(label, label)
 
 
 _CONFIDENCE_TIER_PATTERN = re.compile(r"\s*(high|moderate|low)\b", re.IGNORECASE)

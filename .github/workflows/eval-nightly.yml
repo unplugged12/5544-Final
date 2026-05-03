@@ -1,23 +1,25 @@
-name: Eval Nightly
+name: ModBot Eval (manual)
 
+# Manual-trigger only while we calibrate the dataset and prompts. The nightly
+# cron was removed so iteration runs don't compete with timed runs and so we
+# don't burn API budget before the dataset is ready. Re-enable a cron once a
+# baseline is locked.
+#
 # Provisional thresholds (informational only — gate is `continue-on-error: true`
-# until the first 3 nightly runs lock the baseline):
+# until manual runs lock the baseline):
 #   - per-rule precision >= 0.85
 #   - false-positive rate on benign cases <= 0.10
 # After thresholds are locked, remove `continue-on-error` and parse the JSON
 # artifact in a follow-up step that fails the job when the bounds are breached.
 #
-# TODO(2026-05-30): re-evaluate — by then 3+ nightly runs should give a baseline.
-# If still informational at that point, file an issue or schedule a remote agent.
+# TODO(2026-05-04): scheduled agent will inspect uploaded artifacts and decide
+# whether to lock thresholds + restore a nightly cron, or hold for more runs.
 
 on:
-  schedule:
-    # 07:00 UTC = early morning Pacific (00:00 PDT / 23:00 PST). Cheap window.
-    - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
       shots:
-        description: 'Number of LLM shots per case (1 nightly default; 3 for higher confidence)'
+        description: 'Number of LLM shots per case (1 default; 3 for higher confidence)'
         required: false
         default: '1'
         type: number

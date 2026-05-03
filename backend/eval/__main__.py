@@ -30,6 +30,7 @@ if str(_BACKEND_DIR) not in sys.path:
 
 from eval._runner import aggregate as _aggregate  # noqa: E402
 from eval._runner import classify_one as _classify_one  # noqa: E402
+from services.utils import canonical_rule_id  # noqa: E402
 
 _DEFAULT_DATASET = (
     _BACKEND_DIR.parent / "data" / "eval" / "eval_moderation.json"
@@ -84,25 +85,39 @@ def _case_matches(case: dict, filt: dict[str, str]) -> bool:
 # Metrics
 # ---------------------------------------------------------------------------
 
+def _expected_rule(record: dict) -> str | None:
+    return canonical_rule_id(record["expected"]["rule_match"])
+
+
+def _predicted_rule(record: dict) -> str | None:
+    return canonical_rule_id(record["predicted"]["matched_rule"])
+
+
 def _per_rule_pr(records: list[dict]) -> dict[str, dict[str, float]]:
-    """Compute precision/recall per ``expected_rule_match`` key."""
+    """Compute precision/recall per canonical rule id (``rule_NNN``).
+
+    Both ``expected.rule_match`` (canonical IDs in the dataset) and
+    ``predicted.matched_rule`` (LLM emits citation labels like
+    ``"Rule 6: Stay On Topic"``) are normalised through ``canonical_rule_id``
+    before comparison so the metrics aren't systematically wrong.
+    """
     rule_keys = sorted(
-        {r["expected"]["rule_match"] for r in records if r["expected"]["rule_match"]}
-        | {r["predicted"]["matched_rule"] for r in records if r["predicted"]["matched_rule"]}
+        {_expected_rule(r) for r in records if _expected_rule(r)}
+        | {_predicted_rule(r) for r in records if _predicted_rule(r)}
     )
     out: dict[str, dict[str, float]] = {}
     for rk in rule_keys:
         tp = sum(
             1 for r in records
-            if r["expected"]["rule_match"] == rk and r["predicted"]["matched_rule"] == rk
+            if _expected_rule(r) == rk and _predicted_rule(r) == rk
         )
         fp = sum(
             1 for r in records
-            if r["predicted"]["matched_rule"] == rk and r["expected"]["rule_match"] != rk
+            if _predicted_rule(r) == rk and _expected_rule(r) != rk
         )
         fn = sum(
             1 for r in records
-            if r["expected"]["rule_match"] == rk and r["predicted"]["matched_rule"] != rk
+            if _expected_rule(r) == rk and _predicted_rule(r) != rk
         )
         precision = tp / (tp + fp) if (tp + fp) else 0.0
         recall = tp / (tp + fn) if (tp + fn) else 0.0
@@ -129,14 +144,15 @@ def _fpr_on_benign(records: list[dict]) -> dict[str, float]:
 
 
 def _confusion_matrix(records: list[dict]) -> dict[str, dict[str, int]]:
-    """Build a confusion matrix keyed by ``expected_rule_match`` -> ``matched_rule``.
+    """Confusion matrix keyed by canonical expected rule id -> predicted rule id.
 
-    Null is rendered as the literal string ``"<null>"`` so JSON keys stay strings.
+    Null is rendered as ``"<null>"``. Both axes go through ``canonical_rule_id``
+    so a predicted ``"Rule 6: Stay On Topic"`` matches an expected ``"rule_006"``.
     """
     matrix: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for r in records:
-        exp = r["expected"]["rule_match"] or "<null>"
-        pred = r["predicted"]["matched_rule"] or "<null>"
+        exp = _expected_rule(r) or "<null>"
+        pred = _predicted_rule(r) or "<null>"
         matrix[exp][pred] += 1
     return {k: dict(v) for k, v in matrix.items()}
 

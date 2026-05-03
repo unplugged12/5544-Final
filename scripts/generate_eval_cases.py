@@ -76,6 +76,7 @@ CSV_FIELDS = [
     "proposed_violation_type",
     "proposed_severity",
     "proposed_rule_match",
+    "proposed_suggested_action",
     "category",
     "notes",
     "channel_context",
@@ -330,6 +331,9 @@ def main() -> int:
                         "proposed_violation_type": item.get("expected_violation_type", ""),
                         "proposed_severity": item.get("expected_severity", ""),
                         "proposed_rule_match": item.get("expected_rule_match") or "",
+                        "proposed_suggested_action": item.get(
+                            "expected_suggested_action", ""
+                        ),
                         "category": item.get("category", category),
                         "notes": item.get("notes", ""),
                         "channel_context": item.get("channel_context", ""),
