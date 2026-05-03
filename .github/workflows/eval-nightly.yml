@@ -1,19 +1,35 @@
 name: ModBot Eval (manual)
 
-# Manual-trigger only while we calibrate the dataset and prompts. The nightly
-# cron was removed so iteration runs don't compete with timed runs and so we
-# don't burn API budget before the dataset is ready. Re-enable a cron once a
-# baseline is locked.
+# Manual-trigger only — no cron schedule until the user explicitly re-enables one.
 #
-# Provisional thresholds (informational only — gate is `continue-on-error: true`
-# until manual runs lock the baseline):
-#   - per-rule precision >= 0.85
-#   - false-positive rate on benign cases <= 0.10
-# After thresholds are locked, remove `continue-on-error` and parse the JSON
-# artifact in a follow-up step that fails the job when the bounds are breached.
+# LOCKED THRESHOLDS (2026-05-03)
+# Derived from Run #6 (Anthropic claude-sonnet-4, 220 cases, 1-shot) as
+# documented in PR #56 (sha d8bb226) and PR #57 (sha 7e0ceace). The gh CLI
+# was unavailable for direct artifact download; per-rule metrics were sourced
+# from PR descriptions and commit messages containing verbatim figures.
 #
-# TODO(2026-05-04): scheduled agent will inspect uploaded artifacts and decide
-# whether to lock thresholds + restore a nightly cron, or hold for more runs.
+# Run #6 observed actuals:
+#   rule_007: precision 1.00 / recall 0.40
+#   rule_009: precision 0.75 / recall 0.90  <- below aspirational 0.85
+#   rule_013: precision 0.57 / recall 0.40  <- worst precision in suite
+#   rule_017: precision 1.00 / recall 0.20
+#   all other rules: precision 1.00
+#   benign FPR: 0.112  (exceeds aspirational target of 0.10)
+#
+# Lock formula: LOWER of (aspirational, observed * 0.95) per rule.
+# FPR lock: observed * 1.05 rounded up (0.112 * 1.05 = 0.118 -> 0.12) because
+# the observed baseline does not yet meet the aspirational 0.10 target.
+#
+# Per-rule precision thresholds (locked):
+#   rule_009 : 0.71  (observed 0.75 * 0.95)
+#   rule_013 : 0.54  (observed 0.57 * 0.95)
+#   all other rules with >= 5 ground-truth cases : 0.85  (aspirational)
+# Benign FPR threshold (locked) : <= 0.12
+#
+# Aspirational targets (post-prompt-iteration goal):
+#   per-rule precision >= 0.85, benign FPR <= 0.10
+# Re-tighten thresholds to aspirational after a post-PR-#57 eval run confirms
+# the targeted few-shots for rules 7/9/13/17 close the remaining gaps.
 
 on:
   workflow_dispatch:
@@ -49,7 +65,6 @@ jobs:
 
       - name: Run eval
         id: eval
-        continue-on-error: true
         working-directory: backend
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -105,4 +120,74 @@ jobs:
                   f"| {m['precision']} | {m['recall']} |"
               )
           Path(summary_path).write_text("\n".join(lines), encoding="utf-8")
+          PY
+
+      - name: Check thresholds
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          # Per-rule precision locks (locked 2026-05-03, Run #6 Sonnet 4 baseline)
+          # Formula: LOWER of (aspirational 0.85, observed_precision * 0.95)
+          PRECISION_THRESHOLDS = {
+              "rule_009": 0.71,   # observed 0.75; 0.75 * 0.95 = 0.71
+              "rule_013": 0.54,   # observed 0.57; 0.57 * 0.95 = 0.54 (worst in suite)
+          }
+          DEFAULT_PRECISION = 0.85   # aspirational; met by all other rules (precision=1.00)
+          FPR_THRESHOLD     = 0.12   # observed 0.112 * 1.05; looser than aspirational 0.10
+          MIN_CASES         = 5      # rules with fewer ground-truth cases are not gated
+
+          artifact = Path("backend/eval/artifacts/ci-eval.json")
+          if not artifact.is_file():
+              print("ERROR: ci-eval.json not found — cannot enforce thresholds.", file=sys.stderr)
+              sys.exit(1)
+
+          data = json.loads(artifact.read_text(encoding="utf-8"))
+          failures = []
+
+          print("=== Threshold Check ===")
+          print(f"    artifact  : {artifact}")
+          print(f"    generated : {data.get('generated_at', '?')}")
+          print(f"    cases     : {data.get('case_count', 0)}")
+          print()
+
+          for rule_id, metrics in sorted(data.get("per_rule", {}).items()):
+              ground_truth_cases = metrics["tp"] + metrics["fn"]
+              if ground_truth_cases < MIN_CASES:
+                  print(f"  skip {rule_id}: only {ground_truth_cases} ground-truth case(s) (< {MIN_CASES}); not gated")
+                  continue
+              threshold = PRECISION_THRESHOLDS.get(rule_id, DEFAULT_PRECISION)
+              precision = metrics["precision"]
+              if precision < threshold:
+                  delta = threshold - precision
+                  msg = (f"  FAIL {rule_id}: precision={precision:.3f} < "
+                         f"locked={threshold:.2f} (short by {delta:.3f})")
+                  failures.append(msg)
+                  print(msg)
+              else:
+                  print(f"  pass {rule_id}: precision={precision:.3f} >= locked={threshold:.2f}")
+
+          print()
+          fpr_data = data.get("fpr_on_benign", {})
+          fpr = fpr_data.get("fpr", 0.0)
+          fp  = fpr_data.get("false_positives", "?")
+          bn  = fpr_data.get("benign_total", "?")
+          if fpr > FPR_THRESHOLD:
+              delta = fpr - FPR_THRESHOLD
+              msg = (f"  FAIL benign_fpr={fpr:.3f} ({fp}/{bn}) > "
+                     f"locked={FPR_THRESHOLD:.2f} (over by {delta:.3f})")
+              failures.append(msg)
+              print(msg)
+          else:
+              print(f"  pass benign_fpr={fpr:.3f} ({fp}/{bn}) <= locked={FPR_THRESHOLD:.2f}")
+
+          if failures:
+              print(f"\n{len(failures)} threshold(s) breached:", file=sys.stderr)
+              for f in failures:
+                  print(f, file=sys.stderr)
+              sys.exit(1)
+
+          print("\nAll thresholds passed.")
           PY
