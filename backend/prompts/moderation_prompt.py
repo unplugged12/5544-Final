@@ -81,6 +81,10 @@ def get_system_prompt() -> str:
         '{"violation_type":"self_promo","matched_rule":"Rule 4: No Unauthorized Self-Promotion",'
         '"explanation":"Posting a YouTube link outside #content-share.",'
         '"severity":"low","suggested_action":"remove_message","confidence_note":"High - clear self-promo"}\n\n'
+        "Input: \"DM me for my gaming server invite — we run late-night scrims and giveaways\"\n"
+        '{"violation_type":"self_promo","matched_rule":"Rule 4: No Unauthorized Self-Promotion",'
+        '"explanation":"Promoting a competing Discord server via DM solicitation; Rule 4 explicitly bans DM promo and cross-community promotion.",'
+        '"severity":"medium","suggested_action":"remove_message","confidence_note":"High - cross-community self-promo via DM"}\n\n'
         "Input: \"is talking about Medal of Honor games allowed here?\"\n"
         '{"violation_type":"no_violation","matched_rule":"Rule 6: Stay On Topic",'
         '"explanation":"Asking whether a non-CoD game title is on-topic; the relevant rule is Stay On Topic regardless of any account-trading-shaped retrieval.",'
