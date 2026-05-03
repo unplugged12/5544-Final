@@ -3,26 +3,32 @@ name: ModBot Eval (manual)
 # Manual-trigger only — no cron schedule until the user explicitly re-enables one.
 #
 # LOCKED THRESHOLDS (2026-05-03)
-# Derived from Run #6 (Anthropic claude-sonnet-4, 220 cases, 1-shot) as
-# documented in PR #56 (sha d8bb226) and PR #57 (sha 7e0ceace). The gh CLI
-# was unavailable for direct artifact download; per-rule metrics were sourced
-# from PR descriptions and commit messages containing verbatim figures.
+# Derived from run ID 25267967839 (Anthropic claude-sonnet-4, 220 cases, 3-shot,
+# generated_at 2026-05-03T03:41:32) — ci-eval.json artifact downloaded directly.
+# Supersedes the initial PR description which sourced figures from PR prose
+# (gh CLI was unavailable in the remote agent environment).
 #
-# Run #6 observed actuals:
-#   rule_007: precision 1.00 / recall 0.40
-#   rule_009: precision 0.75 / recall 0.90  <- below aspirational 0.85
-#   rule_013: precision 0.57 / recall 0.40  <- worst precision in suite
-#   rule_017: precision 1.00 / recall 0.20
-#   all other rules: precision 1.00
-#   benign FPR: 0.112  (exceeds aspirational target of 0.10)
+# Run #6 observed actuals (from artifact):
+#   rule_003: precision 0.909 / recall 1.000
+#   rule_004: precision 0.833 / recall 1.000  <- below aspirational 0.85
+#   rule_007: precision 1.000 / recall 0.400
+#   rule_008: precision 0.909 / recall 1.000
+#   rule_009: precision 0.750 / recall 0.900  <- below aspirational 0.85
+#   rule_013: precision 0.700 / recall 0.700  <- worst precision in suite
+#   rule_017: precision 1.000 / recall 0.200
+#   rule_018: precision 0.769 / recall 1.000  <- below aspirational 0.85
+#   all other rules: precision 1.000
+#   benign FPR: 0.1120  (FP=15 / benign_total=134; exceeds aspirational 0.10)
 #
 # Lock formula: LOWER of (aspirational, observed * 0.95) per rule.
 # FPR lock: observed * 1.05 rounded up (0.112 * 1.05 = 0.118 -> 0.12) because
 # the observed baseline does not yet meet the aspirational 0.10 target.
 #
 # Per-rule precision thresholds (locked):
-#   rule_009 : 0.71  (observed 0.75 * 0.95)
-#   rule_013 : 0.54  (observed 0.57 * 0.95)
+#   rule_004 : 0.79  (observed 0.833 * 0.95 = 0.791)
+#   rule_009 : 0.71  (observed 0.750 * 0.95 = 0.713)
+#   rule_013 : 0.67  (observed 0.700 * 0.95 = 0.665)
+#   rule_018 : 0.73  (observed 0.769 * 0.95 = 0.731)
 #   all other rules with >= 5 ground-truth cases : 0.85  (aspirational)
 # Benign FPR threshold (locked) : <= 0.12
 #
@@ -129,13 +135,15 @@ jobs:
           import sys
           from pathlib import Path
 
-          # Per-rule precision locks (locked 2026-05-03, Run #6 Sonnet 4 baseline)
+          # Per-rule precision locks (locked 2026-05-03, run ID 25267967839, Sonnet 4, 3-shot)
           # Formula: LOWER of (aspirational 0.85, observed_precision * 0.95)
           PRECISION_THRESHOLDS = {
-              "rule_009": 0.71,   # observed 0.75; 0.75 * 0.95 = 0.71
-              "rule_013": 0.54,   # observed 0.57; 0.57 * 0.95 = 0.54 (worst in suite)
+              "rule_004": 0.79,   # observed 0.833; 0.833 * 0.95 = 0.791
+              "rule_009": 0.71,   # observed 0.750; 0.750 * 0.95 = 0.713
+              "rule_013": 0.67,   # observed 0.700; 0.700 * 0.95 = 0.665 (worst in suite)
+              "rule_018": 0.73,   # observed 0.769; 0.769 * 0.95 = 0.731
           }
-          DEFAULT_PRECISION = 0.85   # aspirational; met by all other rules (precision=1.00)
+          DEFAULT_PRECISION = 0.85   # aspirational; met by all remaining rules
           FPR_THRESHOLD     = 0.12   # observed 0.112 * 1.05; looser than aspirational 0.10
           MIN_CASES         = 5      # rules with fewer ground-truth cases are not gated
           # All 18 rules confirmed >= 5 cases in PR #54 dataset expansion.
