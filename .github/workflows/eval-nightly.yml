@@ -138,6 +138,9 @@ jobs:
           DEFAULT_PRECISION = 0.85   # aspirational; met by all other rules (precision=1.00)
           FPR_THRESHOLD     = 0.12   # observed 0.112 * 1.05; looser than aspirational 0.10
           MIN_CASES         = 5      # rules with fewer ground-truth cases are not gated
+          # All 18 rules confirmed >= 5 cases in PR #54 dataset expansion.
+          # Sub-MIN_CASES for any of these means dataset/mapping regression — hard failure.
+          BASELINE_RULES = {f"rule_{i:03d}" for i in range(1, 19)}
 
           artifact = Path("backend/eval/artifacts/ci-eval.json")
           if not artifact.is_file():
@@ -153,10 +156,24 @@ jobs:
           print(f"    cases     : {data.get('case_count', 0)}")
           print()
 
-          for rule_id, metrics in sorted(data.get("per_rule", {}).items()):
+          per_rule = data.get("per_rule", {})
+
+          # Fail if any baseline rule is entirely absent from the artifact.
+          for rule_id in sorted(BASELINE_RULES - set(per_rule.keys())):
+              msg = f"  FAIL {rule_id}: absent from per_rule metrics — dataset or mapping regression?"
+              failures.append(msg)
+              print(msg)
+
+          for rule_id, metrics in sorted(per_rule.items()):
               ground_truth_cases = metrics["tp"] + metrics["fn"]
               if ground_truth_cases < MIN_CASES:
-                  print(f"  skip {rule_id}: only {ground_truth_cases} ground-truth case(s) (< {MIN_CASES}); not gated")
+                  if rule_id in BASELINE_RULES:
+                      msg = (f"  FAIL {rule_id}: only {ground_truth_cases} ground-truth case(s) "
+                             f"(< {MIN_CASES}); baseline coverage lost — dataset or mapping regression?")
+                      failures.append(msg)
+                      print(msg)
+                  else:
+                      print(f"  skip {rule_id}: only {ground_truth_cases} ground-truth case(s) (< {MIN_CASES}); not in locked baseline")
                   continue
               threshold = PRECISION_THRESHOLDS.get(rule_id, DEFAULT_PRECISION)
               precision = metrics["precision"]
@@ -170,8 +187,11 @@ jobs:
                   print(f"  pass {rule_id}: precision={precision:.3f} >= locked={threshold:.2f}")
 
           print()
-          fpr_data = data.get("fpr_on_benign", {})
-          fpr = fpr_data.get("fpr", 0.0)
+          fpr_data = data.get("fpr_on_benign")
+          if fpr_data is None or "fpr" not in fpr_data:
+              print("ERROR: fpr_on_benign metric missing from artifact — schema drift or truncated run.", file=sys.stderr)
+              sys.exit(1)
+          fpr = fpr_data["fpr"]
           fp  = fpr_data.get("false_positives", "?")
           bn  = fpr_data.get("benign_total", "?")
           if fpr > FPR_THRESHOLD:
