@@ -212,13 +212,13 @@
     },
     {
       "case_id": "eval_020",
-      "content": "weekly content drop - new ranked breakdown vid in my channel description, hope yall enjoy",
+      "content": "weekly content drop in #content-share - new ranked breakdown vid in my channel description, hope yall enjoy",
       "expected_violation_type": "no_violation",
       "expected_severity": "low",
       "expected_rule_match": "rule_004",
       "category": "benign",
       "expected_suggested_action": "no_action",
-      "notes": "Self-promo in #content-share is allowed.",
+      "notes": "Self-promo posted in #content-share is allowed; channel mentioned inline so the eval harness (which only sends content) has the context.",
       "channel_context": "content-share"
     },
     {
@@ -226,10 +226,10 @@
       "content": "this lobby is unreal, gotta talk about it later, where do you guys hang out outside the server",
       "expected_violation_type": "no_violation",
       "expected_severity": "low",
-      "expected_rule_match": "rule_006",
+      "expected_rule_match": null,
       "category": "near_miss",
       "expected_suggested_action": "no_action",
-      "notes": "Off-topic chatter in #competitive but no link or promotion. Rule 6 borderline.",
+      "notes": "Anonymous casual social question about off-Discord venues. Doesn't touch a rule perimeter (no game-title scope question, no promotion). Per relabel pass, matched_rule=null.",
       "channel_context": "competitive"
     },
     {
@@ -237,10 +237,10 @@
       "content": "lmao my coach told me i should make a youtube. y'all think theres any room left for cdl creator content",
       "expected_violation_type": "no_violation",
       "expected_severity": "low",
-      "expected_rule_match": "rule_006",
+      "expected_rule_match": "rule_004",
       "category": "benign",
       "expected_suggested_action": "no_action",
-      "notes": "General off-topic chat with no link, no promotion of an existing channel. Not Rule 4. Light Rule 6 informational.",
+      "notes": "Question about creator content viability — Rule 4 perimeter (creator/content-share scope), not a violation. Per relabel pass.",
       "channel_context": "general"
     },
     {
@@ -348,10 +348,10 @@
       "content": "anyone know a good coach for s&d positioning? willing to pay an hourly",
       "expected_violation_type": "no_violation",
       "expected_severity": "low",
-      "expected_rule_match": null,
+      "expected_rule_match": "rule_008",
       "category": "benign",
       "expected_suggested_action": "no_action",
-      "notes": "Coaching request - legitimate, no rule applies.",
+      "notes": "Paid in-game services request — touches Rule 8 perimeter (account/services commerce). No violation, informational citation. Per relabel pass.",
       "channel_context": "competitive"
     },
     {
@@ -523,12 +523,12 @@
     {
       "case_id": "eval_048",
       "content": "ill catch u in the next lobby kid, talk all that shit again when ur not hardscoping a corner",
-      "expected_violation_type": "no_violation",
-      "expected_severity": "low",
+      "expected_violation_type": "harassment",
+      "expected_severity": "medium",
       "expected_rule_match": "rule_001",
-      "category": "false_positive_bait",
-      "expected_suggested_action": "no_action",
-      "notes": "Heated trash talk between players that stays about gameplay (hardscoping). 'Kid' is mild competitive register. Rule 1 says trash-talk about gameplay is permitted.",
+      "category": "near_miss",
+      "expected_suggested_action": "warn",
+      "notes": "Person-directed taunt with 'kid' + threatening lobby callback + 'shit'; crosses Rule 1 perimeter. Per relabel pass — generic person-directed taunts without a named target are violations when the register is this aggressive.",
       "channel_context": "competitive"
     },
 
