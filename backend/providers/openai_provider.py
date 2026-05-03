@@ -11,6 +11,20 @@ from providers.utils import format_chunks
 logger = logging.getLogger(__name__)
 
 
+# GPT-5 family models reject explicit temperature values other than the
+# default (1). Calling chat.completions.create with temperature=0.2 raises
+# a 400 invalid_request_error. For those models, omit the param entirely so
+# the API uses its default. gpt-4 / gpt-4o / o1 etc. all accept
+# temperature normally.
+_FIXED_TEMPERATURE_PREFIXES = ("gpt-5",)
+
+
+def _temperature_kwargs(model: str, temperature: float) -> dict:
+    if any(model.startswith(prefix) for prefix in _FIXED_TEMPERATURE_PREFIXES):
+        return {}
+    return {"temperature": temperature}
+
+
 class OpenAIProvider(BaseLLMProvider):
     def __init__(self) -> None:
         self._client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
@@ -48,7 +62,7 @@ class OpenAIProvider(BaseLLMProvider):
         resp = await self._client.chat.completions.create(
             model=self._model,
             messages=messages,
-            temperature=0.3,
+            **_temperature_kwargs(self._model, 0.3),
         )
 
         return self._to_response(resp)
@@ -67,7 +81,7 @@ class OpenAIProvider(BaseLLMProvider):
         resp = await self._client.chat.completions.create(
             model=self._model,
             messages=messages,
-            temperature=0.3,
+            **_temperature_kwargs(self._model, 0.3),
         )
 
         return self._to_response(resp)
@@ -94,7 +108,7 @@ class OpenAIProvider(BaseLLMProvider):
         resp = await self._client.chat.completions.create(
             model=self._model,
             messages=messages,
-            temperature=0.4,
+            **_temperature_kwargs(self._model, 0.4),
         )
 
         return self._to_response(resp)
@@ -121,7 +135,7 @@ class OpenAIProvider(BaseLLMProvider):
         resp = await self._client.chat.completions.create(
             model=self._model,
             messages=messages,
-            temperature=0.2,
+            **_temperature_kwargs(self._model, 0.2),
             response_format={"type": "json_object"},
         )
 
@@ -143,7 +157,7 @@ class OpenAIProvider(BaseLLMProvider):
             model=self._model,
             messages=full_messages,
             max_tokens=max_tokens,
-            temperature=0.5,
+            **_temperature_kwargs(self._model, 0.5),
         )
 
         return self._to_response(resp)
