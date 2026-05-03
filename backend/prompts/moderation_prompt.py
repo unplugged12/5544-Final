@@ -128,7 +128,7 @@ def get_system_prompt() -> str:
         "Input: \"yo i help run the ranked lfg pings here, dm me if you need to get added to the lfg list\"\n"
         '{"violation_type":"no_violation","matched_rule":"Rule 7: No Impersonation",'
         '"explanation":"User claims an unofficial helper role; could be impersonation if false but is plausibly a community volunteer. Cite Rule 7 informationally without auto-actioning.",'
-        '"severity":"low","suggested_action":"escalate_to_human","confidence_note":"Moderate - claimed-role check needs human verification"}\n\n'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"Moderate - claimed-role should be verified by humans if needed"}\n\n'
         "Input: \"bro just dm me ill hook you up with the aimbot i been using, been on it 3 seasons no ban\"\n"
         '{"violation_type":"spam","matched_rule":"Rule 9: No Cheating Discussion or Promotion",'
         '"explanation":"Direct offer to distribute an aimbot to other users. Rule 9 has zero tolerance for sharing or promoting cheats.",'
