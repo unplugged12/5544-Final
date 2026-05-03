@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     FALLBACK_PROVIDER: str = "anthropic"
 
     # Model names
-    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_MODEL: str = "gpt-5-nano-2025-08-07"
     ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
 
     # Data stores (defaults match Docker container paths via docker-compose volume mount)
