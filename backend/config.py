@@ -8,9 +8,13 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
 
-    # Provider selection
-    PRIMARY_PROVIDER: str = "openai"
-    FALLBACK_PROVIDER: str = "anthropic"
+    # Provider selection — primary is Anthropic Sonnet. Run #5 vs Run #6
+    # (220-case eval) showed Sonnet 4 substantially outperforms gpt-4o-mini
+    # on the moderation task: closes recall on rules 12/15/16, fixes
+    # rule_001/rule_004 over-flag, no prompt changes needed. OpenAI stays
+    # as fallback (gpt-5-nano with temperature handling fixed in PR #55).
+    PRIMARY_PROVIDER: str = "anthropic"
+    FALLBACK_PROVIDER: str = "openai"
 
     # Model names
     OPENAI_MODEL: str = "gpt-5-nano-2025-08-07"

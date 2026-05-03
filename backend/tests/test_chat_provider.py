@@ -182,22 +182,28 @@ async def test_anthropic_generate_chat_reply_passes_system_as_top_level_kwarg():
 async def test_provider_service_dispatches_generate_chat_reply():
     """provider_service.call('generate_chat_reply', ...) exercises the real dispatch.
 
-    The mock target is _PROVIDERS["openai"].generate_chat_reply — one layer BELOW
-    provider_service.call — so the real dispatch logic runs: provider lookup via
-    _get_provider, getattr resolution of method_name, and kwargs forwarding via
-    await fn(**kwargs).  If any of those steps break, this test fails.
+    The mock target is _PROVIDERS[<primary>].generate_chat_reply — one layer
+    BELOW provider_service.call — so the real dispatch logic runs: provider
+    lookup via _get_provider, getattr resolution of method_name, and kwargs
+    forwarding via await fn(**kwargs).  If any of those steps break, this
+    test fails.
+
+    Reads the primary provider from settings so the test stays correct when
+    PRIMARY_PROVIDER changes (was openai, now anthropic).
     """
     import services.provider_service as _ps
+    from config import settings
 
+    primary = settings.PRIMARY_PROVIDER
     expected = ProviderResponse(
         text="locked in, checking that",
-        provider_name="openai",
-        model="gpt-4o-mini",
+        provider_name=primary,
+        model="mock-model",
         usage={"prompt_tokens": 20, "completion_tokens": 5},
     )
     mock_method = AsyncMock(return_value=expected)
 
-    with patch.object(_ps._PROVIDERS["openai"], "generate_chat_reply", mock_method):
+    with patch.object(_ps._PROVIDERS[primary], "generate_chat_reply", mock_method):
         from services import provider_service
 
         result = await provider_service.call(
@@ -213,7 +219,7 @@ async def test_provider_service_dispatches_generate_chat_reply():
         max_tokens=MAX_TOKENS,
     )
     assert result.text == "locked in, checking that"
-    assert result.provider_name == "openai"
+    assert result.provider_name == primary
 
 
 # ---------------------------------------------------------------------------
