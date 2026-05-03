@@ -81,7 +81,7 @@ def get_system_prompt() -> str:
         '{"violation_type":"self_promo","matched_rule":"Rule 4: No Unauthorized Self-Promotion",'
         '"explanation":"Posting a YouTube link outside #content-share.",'
         '"severity":"low","suggested_action":"remove_message","confidence_note":"High - clear self-promo"}\n\n'
-        "Input: \"DM me if you want my discord server invite, way more chill than this one\"\n"
+        "Input: \"DM me for my gaming server invite — we run late-night scrims and giveaways\"\n"
         '{"violation_type":"self_promo","matched_rule":"Rule 4: No Unauthorized Self-Promotion",'
         '"explanation":"Promoting a competing Discord server via DM solicitation; Rule 4 explicitly bans DM promo and cross-community promotion.",'
         '"severity":"medium","suggested_action":"remove_message","confidence_note":"High - cross-community self-promo via DM"}\n\n'
