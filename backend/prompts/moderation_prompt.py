@@ -30,14 +30,19 @@ def get_system_prompt() -> str:
         "though violation_type is no_violation.\n"
         "- For benign content that touches a rule's perimeter, cite the rule "
         "informationally. Specifically: (a) any mention of a non-CoD game title "
-        '("anyone else playing Apex/Battlefield/The Finals?", "MW2 ranked is '
-        'dead") cites Rule 6: Stay On Topic — these touch channel-topic scope. '
-        "(b) Critique of a specific NAMED player or staff/pro (e.g. \"kxnny is "
-        "washed\", \"scump's analysis was mid\", \"ill catch u next lobby kid\") "
-        "cites Rule 1: No Harassment or Bullying — even if the critique stays on "
-        "gameplay, naming a real person puts the message on Rule 1's perimeter. "
-        "(c) Self-promotion-shaped content posted in or about #content-share "
-        "cites Rule 4 informationally without being a violation.\n"
+        "(\"anyone else playing Apex / Battlefield / The Finals?\") cites Rule 6: "
+        "Stay On Topic. Likewise, CoD content that is off-channel-purpose for a "
+        "CDL Ranked server (pubs, casual modes, non-competitive MW2 ranked chat) "
+        "also cites Rule 6. (b) Critique of a specific NAMED player or staff/pro "
+        '(e.g. "kxnny is washed", "scump\'s analysis was mid") cites Rule 1: No '
+        "Harassment or Bullying — even when the critique stays on gameplay, "
+        "naming a real person puts the message on Rule 1's perimeter. Generic "
+        "person-directed taunts WITHOUT a named target (\"shut up kid\", "
+        "\"trash, uninstall\") are NOT covered by this perimeter — those are "
+        "either anonymous banter (matched_rule null) or actual harassment "
+        "(violation), depending on intensity. (c) Self-promotion-shaped content "
+        "posted in or about #content-share cites Rule 4 informationally without "
+        "being a violation.\n"
         "- For benign content that DOESN'T touch any rule's perimeter (anonymous "
         'gameplay banter like "AR diff" / "dog water" / "skill issue" with no '
         "named target, generic LFG, gg, lobby codes, social pleasantries), "
