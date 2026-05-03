@@ -28,9 +28,20 @@ def get_system_prompt() -> str:
         '- For benign questions ABOUT a rule (e.g. "is X allowed?", "what is the '
         'policy on Y?"), matched_rule is the rule the question is about, even '
         "though violation_type is no_violation.\n"
-        "- For benign content unrelated to any rule (gameplay banter, LFG, gg, "
-        "casual chat, social questions), matched_rule MUST be null. Do NOT cite "
-        "Rule 1 just because banter could theoretically be evaluated against it.\n"
+        "- For benign content that touches a rule's perimeter, cite the rule "
+        "informationally. Specifically: (a) any mention of a non-CoD game title "
+        '("anyone else playing Apex/Battlefield/The Finals?", "MW2 ranked is '
+        'dead") cites Rule 6: Stay On Topic — these touch channel-topic scope. '
+        "(b) Critique of a specific NAMED player or staff/pro (e.g. \"kxnny is "
+        "washed\", \"scump's analysis was mid\", \"ill catch u next lobby kid\") "
+        "cites Rule 1: No Harassment or Bullying — even if the critique stays on "
+        "gameplay, naming a real person puts the message on Rule 1's perimeter. "
+        "(c) Self-promotion-shaped content posted in or about #content-share "
+        "cites Rule 4 informationally without being a violation.\n"
+        "- For benign content that DOESN'T touch any rule's perimeter (anonymous "
+        'gameplay banter like "AR diff" / "dog water" / "skill issue" with no '
+        "named target, generic LFG, gg, lobby codes, social pleasantries), "
+        "matched_rule MUST be null.\n"
         "- Pick by topical fit, NOT by lexical overlap with retrieved rule chunks. "
         "If retrieval surfaces a rule whose subject doesn't match the message "
         "(e.g. a topic question about a different game vs. Rule 8 account "
@@ -73,6 +84,18 @@ def get_system_prompt() -> str:
         '{"violation_type":"no_violation","matched_rule":"Rule 6: Stay On Topic",'
         '"explanation":"Asking about scope of allowed game titles; topical/channel-purpose question.",'
         '"severity":"low","suggested_action":"no_action","confidence_note":"High - topic-scope question"}\n\n'
+        "Input: \"anyone else still playing Apex these days or did everyone move to Warzone\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 6: Stay On Topic",'
+        '"explanation":"Casual mention of a non-CoD game title; touches channel-topic scope so cite Rule 6 informationally.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - other-game mention"}\n\n'
+        "Input: \"kxnny is washed lmao ever since he switched off the xm4 hes been playing like a bot\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 1: No Harassment or Bullying",'
+        '"explanation":"Critique of a specifically NAMED pro player. Stays on gameplay so it is not a violation, but naming a real person puts the message on Rule 1\'s perimeter — cite informationally.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - named-player critique, gameplay-focused"}\n\n'
+        "Input: \"first time poster in #content-share - dropped a season 1 movement guide on YT, would love feedback! youtube.com/@nadekin\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 4: No Unauthorized Self-Promotion",'
+        '"explanation":"Posting in #content-share is the designated channel for self-promotion. Cite Rule 4 informationally; not a violation.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - posting in content-share channel"}\n\n'
         "Input: \"selling my maxed Warzone account, DM for price\"\n"
         '{"violation_type":"spam","matched_rule":"Rule 8: No Account Trading or Selling",'
         '"explanation":"Direct offer to sell a Call of Duty account, which Rule 8 prohibits.",'
