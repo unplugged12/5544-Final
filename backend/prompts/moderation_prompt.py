@@ -137,6 +137,14 @@ def get_system_prompt() -> str:
         '{"violation_type":"no_violation","matched_rule":"Rule 9: No Cheating Discussion or Promotion",'
         '"explanation":"Complaint ABOUT cheaters directed at the developer; not promoting or sharing cheats. Cite Rule 9 informationally.",'
         '"severity":"low","suggested_action":"no_action","confidence_note":"High - complaint about cheating, not promotion"}\n\n'
+        "Input: \"bro i literally rage quit our semi final match my bad to the team, wasnt feeling it and just dipped\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 13: Tournament Conduct",'
+        '"explanation":"Self-admitted rage-quit during a tournament semi-final. Rule 13 specifically prohibits intentional disconnects and rage-quitting in CDL Ranked tournaments.",'
+        '"severity":"medium","suggested_action":"warn","confidence_note":"High - admitted tournament rage-quit"}\n\n'
+        "Input: \"the lag in the quarterfinals tonight was actually unplayable, anyone else getting 200 ping\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 13: Tournament Conduct",'
+        '"explanation":"Complaint about technical issues during a tournament; not a tournament-conduct violation. Cite Rule 13 informationally.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - lag complaint, not misconduct"}\n\n'
         "Input: \"gg, anyone up for ranked\"\n"
         '{"violation_type":"no_violation","matched_rule":null,'
         '"explanation":"Casual social/LFG message; not a violation and not about any rule.",'
