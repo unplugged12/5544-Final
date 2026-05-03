@@ -121,6 +121,14 @@ def get_system_prompt() -> str:
         '{"violation_type":"no_violation","matched_rule":"Rule 8: No Account Trading or Selling",'
         '"explanation":"User is asking about the policy, not offering to trade.",'
         '"severity":"low","suggested_action":"no_action","confidence_note":"High - meta-question about rule"}\n\n'
+        "Input: \"changed my name to Scump_Official and copied his pfp lmaooo bet nobody notices in the ranked lobbies\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 7: No Impersonation",'
+        '"explanation":"User explicitly admits adopting a pro player\'s name and avatar to deceive others. Rule 7 prohibits impersonating staff, pros, or creators.",'
+        '"severity":"high","suggested_action":"remove_message","confidence_note":"High - explicit pro impersonation"}\n\n'
+        "Input: \"yo i help run the ranked lfg pings here, dm me if you need to get added to the lfg list\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 7: No Impersonation",'
+        '"explanation":"User claims an unofficial helper role; could be impersonation if false but is plausibly a community volunteer. Cite Rule 7 informationally without auto-actioning.",'
+        '"severity":"low","suggested_action":"escalate_to_human","confidence_note":"Moderate - claimed-role check needs human verification"}\n\n'
         "Input: \"gg, anyone up for ranked\"\n"
         '{"violation_type":"no_violation","matched_rule":null,'
         '"explanation":"Casual social/LFG message; not a violation and not about any rule.",'
