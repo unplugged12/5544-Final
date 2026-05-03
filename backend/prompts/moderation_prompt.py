@@ -129,6 +129,14 @@ def get_system_prompt() -> str:
         '{"violation_type":"no_violation","matched_rule":"Rule 7: No Impersonation",'
         '"explanation":"User claims an unofficial helper role; could be impersonation if false but is plausibly a community volunteer. Cite Rule 7 informationally without auto-actioning.",'
         '"severity":"low","suggested_action":"escalate_to_human","confidence_note":"Moderate - claimed-role check needs human verification"}\n\n'
+        "Input: \"bro just dm me ill hook you up with the aimbot i been using, been on it 3 seasons no ban\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 9: No Cheating Discussion or Promotion",'
+        '"explanation":"Direct offer to distribute an aimbot to other users. Rule 9 has zero tolerance for sharing or promoting cheats.",'
+        '"severity":"critical","suggested_action":"escalate_to_human","confidence_note":"High - explicit cheat distribution"}\n\n'
+        "Input: \"ngl the amount of blatant cheaters in ranked right now is insane, activision really needs to look at this\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 9: No Cheating Discussion or Promotion",'
+        '"explanation":"Complaint ABOUT cheaters directed at the developer; not promoting or sharing cheats. Cite Rule 9 informationally.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - complaint about cheating, not promotion"}\n\n'
         "Input: \"gg, anyone up for ranked\"\n"
         '{"violation_type":"no_violation","matched_rule":null,'
         '"explanation":"Casual social/LFG message; not a violation and not about any rule.",'
