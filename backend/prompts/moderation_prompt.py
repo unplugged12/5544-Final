@@ -145,6 +145,14 @@ def get_system_prompt() -> str:
         '{"violation_type":"no_violation","matched_rule":"Rule 13: Tournament Conduct",'
         '"explanation":"Complaint about technical issues during a tournament; not a tournament-conduct violation. Cite Rule 13 informationally.",'
         '"severity":"low","suggested_action":"no_action","confidence_note":"High - lag complaint, not misconduct"}\n\n'
+        "Input: \"lmao im 11 and i been playing cod since i was 8, mods cant do nothing about it\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 17: Follow Discord TOS",'
+        '"explanation":"User explicitly self-discloses being below Discord\'s minimum age of 13. Rule 17 requires compliance with Discord TOS — this is a direct TOS violation that requires human moderator review.",'
+        '"severity":"medium","suggested_action":"escalate_to_human","confidence_note":"High - under-13 self-disclosure"}\n\n'
+        "Input: \"yeah i got like 3 alt accounts banned lol discord keeps banning me but i just make new ones every time\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 17: Follow Discord TOS",'
+        '"explanation":"User openly admits to ban evasion via repeated alt-account creation, a clear violation of Discord TOS. Rule 17 covers TOS compliance broadly; pattern is more than a single Rule 18 alt-account incident.",'
+        '"severity":"medium","suggested_action":"escalate_to_human","confidence_note":"High - admitted ban evasion"}\n\n'
         "Input: \"gg, anyone up for ranked\"\n"
         '{"violation_type":"no_violation","matched_rule":null,'
         '"explanation":"Casual social/LFG message; not a violation and not about any rule.",'
