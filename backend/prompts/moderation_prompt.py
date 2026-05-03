@@ -121,6 +121,38 @@ def get_system_prompt() -> str:
         '{"violation_type":"no_violation","matched_rule":"Rule 8: No Account Trading or Selling",'
         '"explanation":"User is asking about the policy, not offering to trade.",'
         '"severity":"low","suggested_action":"no_action","confidence_note":"High - meta-question about rule"}\n\n'
+        "Input: \"changed my name to Scump_Official and copied his pfp lmaooo bet nobody notices in the ranked lobbies\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 7: No Impersonation",'
+        '"explanation":"User explicitly admits adopting a pro player\'s name and avatar to deceive others. Rule 7 prohibits impersonating staff, pros, or creators.",'
+        '"severity":"high","suggested_action":"remove_message","confidence_note":"High - explicit pro impersonation"}\n\n'
+        "Input: \"yo i help run the ranked lfg pings here, dm me if you need to get added to the lfg list\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 7: No Impersonation",'
+        '"explanation":"User claims an unofficial helper role; could be impersonation if false but is plausibly a community volunteer. Cite Rule 7 informationally without auto-actioning.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"Moderate - claimed-role should be verified by humans if needed"}\n\n'
+        "Input: \"bro just dm me ill hook you up with the aimbot i been using, been on it 3 seasons no ban\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 9: No Cheating Discussion or Promotion",'
+        '"explanation":"Direct offer to distribute an aimbot to other users. Rule 9 has zero tolerance for sharing or promoting cheats.",'
+        '"severity":"critical","suggested_action":"escalate_to_human","confidence_note":"High - explicit cheat distribution"}\n\n'
+        "Input: \"ngl the amount of blatant cheaters in ranked right now is insane, activision really needs to look at this\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 9: No Cheating Discussion or Promotion",'
+        '"explanation":"Complaint ABOUT cheaters directed at the developer; not promoting or sharing cheats. Cite Rule 9 informationally.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - complaint about cheating, not promotion"}\n\n'
+        "Input: \"bro i literally rage quit our semi final match my bad to the team, wasnt feeling it and just dipped\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 13: Tournament Conduct",'
+        '"explanation":"Self-admitted rage-quit during a tournament semi-final. Rule 13 specifically prohibits intentional disconnects and rage-quitting in CDL Ranked tournaments.",'
+        '"severity":"medium","suggested_action":"warn","confidence_note":"High - admitted tournament rage-quit"}\n\n'
+        "Input: \"the lag in the quarterfinals tonight was actually unplayable, anyone else getting 200 ping\"\n"
+        '{"violation_type":"no_violation","matched_rule":"Rule 13: Tournament Conduct",'
+        '"explanation":"Complaint about technical issues during a tournament; not a tournament-conduct violation. Cite Rule 13 informationally.",'
+        '"severity":"low","suggested_action":"no_action","confidence_note":"High - lag complaint, not misconduct"}\n\n'
+        "Input: \"lmao im 11 and i been playing cod since i was 8, mods cant do nothing about it\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 17: Follow Discord TOS",'
+        '"explanation":"User explicitly self-discloses being below Discord\'s minimum age of 13. Rule 17 requires compliance with Discord TOS — this is a direct TOS violation that requires human moderator review.",'
+        '"severity":"medium","suggested_action":"escalate_to_human","confidence_note":"High - under-13 self-disclosure"}\n\n'
+        "Input: \"yeah i got like 3 alt accounts banned lol discord keeps banning me but i just make new ones every time\"\n"
+        '{"violation_type":"spam","matched_rule":"Rule 17: Follow Discord TOS",'
+        '"explanation":"User openly admits to ban evasion via repeated alt-account creation, a clear violation of Discord TOS. Rule 17 covers TOS compliance broadly; pattern is more than a single Rule 18 alt-account incident.",'
+        '"severity":"medium","suggested_action":"escalate_to_human","confidence_note":"High - admitted ban evasion"}\n\n'
         "Input: \"gg, anyone up for ranked\"\n"
         '{"violation_type":"no_violation","matched_rule":null,'
         '"explanation":"Casual social/LFG message; not a violation and not about any rule.",'
