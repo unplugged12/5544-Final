@@ -53,6 +53,7 @@ jobs:
         working-directory: backend
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SQLITE_PATH: ${{ github.workspace }}/data/copilot.db
           CHROMA_PERSIST_DIR: ${{ github.workspace }}/data/chroma
         run: |
