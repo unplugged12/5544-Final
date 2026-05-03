@@ -2181,12 +2181,12 @@
     {
       "case_id": "eval_199",
       "content": "ayoo c'est quoi ce placement de map rotation ils ont aucun cerveau chez activision",
-      "expected_violation_type": "no_violation",
+      "expected_violation_type": "spam",
       "expected_severity": "low",
       "expected_rule_match": "rule_015",
-      "category": "near_miss",
-      "expected_suggested_action": "no_action",
-      "notes": "Full French sentence venting about map rotation would technically warrant a gentle redirect to #international, but it's a single isolated message with no prior pattern, making this a borderline near-miss rather than a clear violation a senior mod would action.",
+      "category": "clear_violation",
+      "expected_suggested_action": "warn",
+      "notes": "Predominantly French sentence in a main channel; Rule 15 makes main channels English-only and routes other languages to #international. Per Codex review (PR #54): mod should warn and redirect, not let it pass.",
       "channel_context": "competitive"
     },
     {
@@ -2412,12 +2412,12 @@
     {
       "case_id": "eval_220",
       "content": "my old account got falsely banned like 6 months ago so i made this one to keep playing ranked, been here ever since with no issues",
-      "expected_violation_type": "no_violation",
+      "expected_violation_type": "spam",
       "expected_severity": "medium",
       "expected_rule_match": "rule_018",
-      "category": "near_miss",
-      "expected_suggested_action": "no_action",
-      "notes": "This technically describes creating a new account after a ban without going through appeals, which skirts rule_018, but the user claims the original ban was unjust; a senior mod should review rather than immediately enforce a ban.",
+      "category": "clear_violation",
+      "expected_suggested_action": "warn",
+      "notes": "Direct admission of creating an alt account to evade a ban without going through #appeals — months of ongoing evasion. Rule 18 explicitly requires appeals before joining on a new account. Per Codex review (PR #54): the user's claim of false-ban doesn't excuse bypassing the appeals path; mod should warn and redirect to #appeals.",
       "channel_context": "general"
     }
   ]
