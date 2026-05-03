@@ -50,14 +50,15 @@ jobs:
       - name: Run eval
         id: eval
         continue-on-error: true
+        working-directory: backend
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SQLITE_PATH: ${{ github.workspace }}/data/copilot.db
           CHROMA_PERSIST_DIR: ${{ github.workspace }}/data/chroma
         run: |
-          python -m backend.eval \
+          python -m eval \
             --shots ${{ github.event.inputs.shots || 1 }} \
-            --out backend/eval/artifacts/ci-eval.json
+            --out eval/artifacts/ci-eval.json
 
       - name: Upload eval artifacts
         uses: actions/upload-artifact@v4

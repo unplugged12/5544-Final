@@ -1,14 +1,19 @@
 """CLI entrypoint for the moderation behavior eval.
 
-Usage:
-    python -m backend.eval [--dataset PATH] [--shots N] [--out PATH]
-                           [--filter rule=rule_006] [--cache-dir PATH] [--no-cache]
+Usage (run from the ``backend/`` directory):
+    python -m eval [--dataset PATH] [--shots N] [--out PATH]
+                   [--filter rule=rule_006] [--cache-dir PATH] [--no-cache]
 
 Reuses the same classification path as ``tests/eval/test_eval_moderation.py``
 (``moderation_service._run_moderation_llm``) and the same dataset loader.
 Computes per-rule precision/recall, false-positive rate on benign cases, and
 prints a 19x19 confusion matrix (18 rules + null) as a Markdown summary to
 stdout. Always exits 0 so calling code can gate on the JSON artifact.
+
+The CLI is invoked from ``backend/`` rather than the repo root so that
+``backend/`` itself is on sys.path the same way it is for pytest and uvicorn.
+A package-marker ``backend/__init__.py`` would change pytest's rootdir
+detection and break CI imports — see commit history.
 """
 
 from __future__ import annotations
@@ -202,11 +207,12 @@ def _format_markdown(summary: dict) -> str:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python -m backend.eval",
+        prog="python -m eval",
         description=(
             "Run the ModBot moderation behavior eval over a labeled dataset. "
             "Calls the real LLM via moderation_service._run_moderation_llm — "
-            "requires ANTHROPIC_API_KEY (or the configured primary provider's key)."
+            "requires ANTHROPIC_API_KEY (or the configured primary provider's key). "
+            "Run from the backend/ directory."
         ),
     )
     parser.add_argument(
