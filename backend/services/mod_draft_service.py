@@ -2,6 +2,7 @@
 
 import logging
 
+from config import settings
 from models.enums import TaskType
 from models.schemas import TaskResponse
 from prompts.mod_draft_prompt import get_system_prompt
@@ -13,10 +14,13 @@ logger = logging.getLogger(__name__)
 
 async def draft(situation: str) -> TaskResponse:
     """Draft a moderator response for *situation*."""
-    # 1. Retrieve rules + mod notes
-    chunks = retrieval_service.retrieve(
+    # 1. Retrieve rules + mod notes (split + threshold so notes can't crowd
+    # out rules and irrelevant rules don't surface as matched_rule)
+    chunks = retrieval_service.retrieve_split(
         query=situation,
-        source_types=["rule", "mod_note"],
+        top_k_rules=settings.MODERATION_TOP_K_RULES,
+        top_k_notes=settings.MODERATION_TOP_K_NOTES,
+        score_threshold=settings.MODERATION_RETRIEVAL_SCORE_THRESHOLD,
     )
 
     # 2. Call LLM
@@ -29,7 +33,11 @@ async def draft(situation: str) -> TaskResponse:
 
     body, confidence_note = extract_confidence(result.text)
 
-    citations, matched_rule, raw_source_ids = build_citations_and_rule(chunks)
+    citations, matched_rule, raw_source_ids = build_citations_and_rule(
+        chunks,
+        drafted_body=body,
+        score_threshold=settings.MODERATION_RETRIEVAL_SCORE_THRESHOLD,
+    )
 
     await audit_service.log_interaction(
         task_type=TaskType.MOD_DRAFT.value,

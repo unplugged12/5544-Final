@@ -12,6 +12,7 @@ export default function ResponsePanel({ response }) {
     severity,
     suggested_action,
     matched_rule,
+    violation_type,
     citations,
     confidence_note,
   } = response;
@@ -39,10 +40,10 @@ export default function ResponsePanel({ response }) {
           </div>
         )}
 
-        {matched_rule && (
+        {matched_rule && violation_type !== "no_violation" && (
           <div className="response-panel__meta-row">
             <span className="response-panel__meta-label">Rule:</span>
-            <RuleMatchChip rule={matched_rule} />
+            <RuleMatchChip rule={matched_rule} violationType={violation_type} />
           </div>
         )}
       </div>

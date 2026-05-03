@@ -4,7 +4,9 @@ import json
 import logging
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 
+from config import settings
 from models.enums import (
     EventSource,
     ModerationStatus,
@@ -22,7 +24,7 @@ from services import (
     provider_service,
     retrieval_service,
 )
-from services.utils import parse_json_response
+from services.utils import VALID_RULE_LABELS, parse_confidence_tier, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +49,12 @@ async def _run_moderation_llm(text: str) -> ModerationLLMResult:
     persistence + audit) and ``classify_only`` (which skips both, for chat
     output moderation where we do not want a dashboard event per message).
     """
-    # Retrieve rule + mod_note chunks
-    chunks = retrieval_service.retrieve(
+    # Retrieve rule + mod_note chunks via split queries with distance threshold
+    chunks = retrieval_service.retrieve_split(
         query=text,
-        source_types=["rule", "mod_note"],
+        top_k_rules=settings.MODERATION_TOP_K_RULES,
+        top_k_notes=settings.MODERATION_TOP_K_NOTES,
+        score_threshold=settings.MODERATION_RETRIEVAL_SCORE_THRESHOLD,
     )
 
     # Call LLM
@@ -66,6 +70,12 @@ async def _run_moderation_llm(text: str) -> ModerationLLMResult:
         parsed = parse_json_response(result.text)
         violation_type = ViolationType(parsed.get("violation_type", "no_violation"))
         matched_rule = parsed.get("matched_rule")
+        if matched_rule is not None and matched_rule not in VALID_RULE_LABELS:
+            logger.warning(
+                "moderation.matched_rule_invalid: rejecting unknown label %r",
+                matched_rule,
+            )
+            matched_rule = None
         explanation = parsed.get("explanation", "")
         severity = Severity(parsed.get("severity", "low"))
         suggested_action = SuggestedAction(
@@ -133,7 +143,19 @@ async def analyze(
     }
 
     if demo_mode and llm_result.suggested_action in auto_action_triggers:
-        status = ModerationStatus.AUTO_ACTIONED
+        # Confidence gate: only "Low" confidence downgrades to PENDING; High
+        # and Moderate continue to AUTO_ACTIONED per the user's chosen posture.
+        tier = parse_confidence_tier(llm_result.confidence_note)
+        if tier == "low":
+            logger.info(
+                "moderation.confidence_gate: downgrade auto_action -> pending "
+                "(suggested_action=%s, confidence_note=%r)",
+                llm_result.suggested_action.value,
+                llm_result.confidence_note,
+            )
+            status = ModerationStatus.PENDING
+        else:
+            status = ModerationStatus.AUTO_ACTIONED
     else:
         status = ModerationStatus.PENDING
 

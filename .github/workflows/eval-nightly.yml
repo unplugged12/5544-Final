@@ -1,0 +1,107 @@
+name: ModBot Eval (manual)
+
+# Manual-trigger only while we calibrate the dataset and prompts. The nightly
+# cron was removed so iteration runs don't compete with timed runs and so we
+# don't burn API budget before the dataset is ready. Re-enable a cron once a
+# baseline is locked.
+#
+# Provisional thresholds (informational only — gate is `continue-on-error: true`
+# until manual runs lock the baseline):
+#   - per-rule precision >= 0.85
+#   - false-positive rate on benign cases <= 0.10
+# After thresholds are locked, remove `continue-on-error` and parse the JSON
+# artifact in a follow-up step that fails the job when the bounds are breached.
+#
+# TODO(2026-05-04): scheduled agent will inspect uploaded artifacts and decide
+# whether to lock thresholds + restore a nightly cron, or hold for more runs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      shots:
+        description: 'Number of LLM shots per case (1 default; 3 for higher confidence)'
+        required: false
+        default: '1'
+        type: number
+
+jobs:
+  eval:
+    name: ModBot behavior eval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            data/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install -r data/requirements.txt
+
+      - name: Seed Chroma
+        run: python data/ingest.py
+
+      - name: Run eval
+        id: eval
+        continue-on-error: true
+        working-directory: backend
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SQLITE_PATH: ${{ github.workspace }}/data/copilot.db
+          CHROMA_PERSIST_DIR: ${{ github.workspace }}/data/chroma
+        run: |
+          python -m eval \
+            --shots ${{ github.event.inputs.shots || 1 }} \
+            --out eval/artifacts/ci-eval.json
+
+      - name: Upload eval artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-artifacts
+          path: backend/eval/artifacts/
+          retention-days: 30
+
+      - name: Post Markdown summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          artifact = Path("backend/eval/artifacts/ci-eval.json")
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if not summary_path or not artifact.is_file():
+              raise SystemExit(0)
+          data = json.loads(artifact.read_text(encoding="utf-8"))
+
+          lines = []
+          lines.append("# ModBot Eval Nightly")
+          lines.append("")
+          lines.append(f"- Generated: {data.get('generated_at', '?')}")
+          lines.append(f"- Cases: {data.get('case_count', 0)}")
+          lines.append(f"- Shots per case: {data.get('shots', '?')}")
+          fpr = data.get("fpr_on_benign", {})
+          lines.append(
+              f"- Benign FPR: {fpr.get('fpr', '?')} "
+              f"({fpr.get('false_positives', '?')}/{fpr.get('benign_total', '?')})"
+          )
+          lines.append("")
+          lines.append("## Per-rule precision / recall")
+          lines.append("")
+          lines.append("| Rule | TP | FP | FN | Precision | Recall |")
+          lines.append("|------|---:|---:|---:|----------:|-------:|")
+          for rk, m in sorted(data.get("per_rule", {}).items()):
+              lines.append(
+                  f"| {rk} | {m['tp']} | {m['fp']} | {m['fn']} "
+                  f"| {m['precision']} | {m['recall']} |"
+              )
+          Path(summary_path).write_text("\n".join(lines), encoding="utf-8")
+          PY

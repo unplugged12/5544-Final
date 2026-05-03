@@ -301,6 +301,129 @@ def test_toxic_messages_have_required_fields(test_toxic_messages):
 
 
 # ---------------------------------------------------------------------------
+# 7b. eval_moderation.json schema (Phase B.1)
+# ---------------------------------------------------------------------------
+
+EVAL_MODERATION_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "eval", "eval_moderation.json"
+)
+
+EVAL_REQUIRED_FIELDS = {
+    "case_id",
+    "content",
+    "expected_violation_type",
+    "expected_severity",
+    "expected_rule_match",
+    "category",
+    "expected_suggested_action",
+}
+
+EVAL_VIOLATION_TYPES = {
+    "spam",
+    "harassment",
+    "hate_speech",
+    "toxic_attack",
+    "self_promo",
+    "spoiler",
+    "flooding",
+    "no_violation",
+}
+
+EVAL_SEVERITIES = {"low", "medium", "high", "critical"}
+
+EVAL_SUGGESTED_ACTIONS = {
+    "no_action",
+    "warn",
+    "remove_message",
+    "timeout_or_mute_recommendation",
+    "escalate_to_human",
+}
+
+EVAL_CATEGORIES = {
+    "clear_violation",
+    "near_miss",
+    "false_positive_bait",
+    "sarcasm",
+    "gaming_vernacular",
+    "ambiguous",
+    "benign",
+}
+
+EVAL_RULE_PATTERN = re.compile(r"^rule_\d{3}$")
+EVAL_CASE_ID_PATTERN = re.compile(r"^eval_\d{3,}$")
+
+
+def test_eval_moderation_schema(rules):
+    """Validate data/eval/eval_moderation.json schema if it exists.
+
+    The file may be absent in early development (pre-Phase B.1 land); skip
+    rather than fail in that case so CI doesn't break.
+    """
+    if not os.path.exists(EVAL_MODERATION_PATH):
+        pytest.skip(f"eval_moderation.json not present at {EVAL_MODERATION_PATH}")
+
+    with open(EVAL_MODERATION_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert "eval_moderation" in data, "Top-level key 'eval_moderation' missing"
+    cases = data["eval_moderation"]
+    assert isinstance(cases, list) and cases, "eval_moderation must be a non-empty list"
+
+    valid_rule_ids = {r["source_id"] for r in rules}
+    seen_ids: set[str] = set()
+
+    for case in cases:
+        cid = case.get("case_id", "<unknown>")
+
+        # Required fields present.
+        missing = EVAL_REQUIRED_FIELDS - set(case.keys())
+        assert not missing, f"Eval case '{cid}' missing fields: {missing}"
+
+        # case_id pattern + uniqueness.
+        assert EVAL_CASE_ID_PATTERN.match(cid), (
+            f"Eval case_id '{cid}' must match pattern eval_NNN"
+        )
+        assert cid not in seen_ids, f"Duplicate eval case_id: '{cid}'"
+        seen_ids.add(cid)
+
+        # Enum-bounded fields.
+        vt = case["expected_violation_type"]
+        assert vt in EVAL_VIOLATION_TYPES, (
+            f"Eval case '{cid}': bad expected_violation_type '{vt}'"
+        )
+        sev = case["expected_severity"]
+        assert sev in EVAL_SEVERITIES, (
+            f"Eval case '{cid}': bad expected_severity '{sev}'"
+        )
+        action = case["expected_suggested_action"]
+        assert action in EVAL_SUGGESTED_ACTIONS, (
+            f"Eval case '{cid}': bad expected_suggested_action '{action}'"
+        )
+        cat = case["category"]
+        assert cat in EVAL_CATEGORIES, (
+            f"Eval case '{cid}': bad category '{cat}'"
+        )
+
+        # expected_rule_match: None / null OR rule_NNN that exists in rules.json.
+        rule_match = case["expected_rule_match"]
+        if rule_match is not None:
+            assert isinstance(rule_match, str), (
+                f"Eval case '{cid}': expected_rule_match must be string or null"
+            )
+            assert EVAL_RULE_PATTERN.match(rule_match), (
+                f"Eval case '{cid}': expected_rule_match '{rule_match}' must match rule_NNN"
+            )
+            assert rule_match in valid_rule_ids, (
+                f"Eval case '{cid}': expected_rule_match '{rule_match}' not in rules.json"
+            )
+
+        # content non-empty (placeholder safety).
+        assert isinstance(case["content"], str) and case["content"].strip(), (
+            f"Eval case '{cid}': content is empty or non-string"
+        )
+
+
+# ---------------------------------------------------------------------------
 # 8. Tags are non-empty lists of strings
 # ---------------------------------------------------------------------------
 
